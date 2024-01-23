@@ -40,14 +40,16 @@ class NASearcher:
 
         self.bounds = bounds  # bounds of the search space
         self.nd = len(bounds)  # number of dimensions
+        self.lower = np.array([b[0] for b in bounds])
+        self.upper = np.array([b[1] for b in bounds])
 
         self.samples = np.zeros((self.nt, self.nd))
         self.objectives = np.zeros(self.nt)
 
     def _initial_random_search(self) -> None:
         self.X = np.random.uniform(
-            low=[b[0] for b in self.bounds],
-            high=[b[1] for b in self.bounds],
+            low=self.lower,
+            high=self.upper,
             size=(self.ni, self.nd),
         )
         self.samples[: self.ni] = self.X
