@@ -44,7 +44,15 @@ class NASearcher:
         self.upper = np.array([b[1] for b in bounds])
 
         self.samples = np.zeros((self.nt, self.nd))
-        self.objectives = np.zeros(self.nt)
+        self.objectives = np.full(self.nt, np.inf)  # start with inf since we want to minimize
+
+    def run(self) -> None:
+        self._initial_random_search()
+        for i in range(1, self.n):
+            inds = self._get_best_indices()
+            cells_to_resample = self.samples[inds]
+            for cell in cells_to_resample:
+                self._resample_cell(cell, inds)
 
     def _initial_random_search(self) -> None:
         self.X = np.random.uniform(
@@ -55,23 +63,9 @@ class NASearcher:
         self.samples[: self.ni] = self.X
         self.objectives[: self.ni] = np.apply_along_axis(self.objective, 1, self.X)
 
-    def _sample_voronoi_cell(self, i: int) -> None:
-        """
-        Args:
-            i (int): The iteration number.
-        """
-        pass
+    def _get_best_indices(self) -> np.ndarray:
+        # there may be a faster way to do this using np.argpartition
+        return np.argsort(self.objectives)[: self.nr]
 
-    def _sample_index(self, i: int) -> int:
-        """
-        Args:
-            i (int): The iteration number.
-        Returns:
-            int: The index of the sample given the iteration number and tuning parameters ns and nr.
-        """
+    def _resample_cell(self, cell: ArrayLike, inds: np.ndarray) -> None:
         pass
-
-    def run(self) -> None:
-        self._initial_random_search()
-        for i in range(1, self.n):
-            self._sample_voronoi_cell()

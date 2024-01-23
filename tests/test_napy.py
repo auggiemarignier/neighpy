@@ -35,3 +35,17 @@ def test__initial_random_search(nas_fixture):
     assert np.array_equal(
         nas_fixture.objectives[nas_fixture.ni :], np.zeros(nas_fixture.nt - nas_fixture.ni)
     )
+
+
+def test__get_best_indices(nas_fixture):
+    nas_fixture._initial_random_search()
+    inds = nas_fixture._get_best_indices()
+
+    assert len(inds) == nas_fixture.nr
+    assert np.all(inds < nas_fixture.ni)  # all indices should be from initial random search
+    assert not np.array_equal(
+        nas_fixture.samples[inds], np.zeros((nas_fixture.nr, 3))
+    )  # all samples should be non-zero
+    assert not np.array_equal(
+        nas_fixture.objectives[inds], np.zeros(nas_fixture.nr)
+    )  # all objectives should be non-zero
