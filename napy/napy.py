@@ -37,6 +37,7 @@ class NASearcher:
         self.ni = ni  # number of samples from initial random search
         self.n = n  # number of iterations
         self.nt = ni + n * (nr * ns)  # total number of samples
+        self.np = 0  # running total of number of samples
 
         self.bounds = bounds  # bounds of the search space
         self.nd = len(bounds)  # number of dimensions
@@ -48,11 +49,13 @@ class NASearcher:
 
     def run(self) -> None:
         self._initial_random_search()
+        self.np += self.ni
         for i in range(1, self.n):
             inds = self._get_best_indices()
             cells_to_resample = self.samples[inds]
             for cell in cells_to_resample:
                 self._resample_cell(cell, inds)
+                self.np += self.ns
 
     def _initial_random_search(self) -> None:
         self.X = np.random.uniform(
