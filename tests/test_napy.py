@@ -10,7 +10,7 @@ def objective(x: ArrayLike) -> float:
 
 
 @pytest.fixture
-def nas_fixture():
+def NAS():
     ns = 10
     nr = 5
     ni = 5
@@ -19,37 +19,37 @@ def nas_fixture():
     return NASearcher(objective, ns, nr, ni, n, bounds)
 
 
-def test__initial_random_search(nas_fixture):
-    new_samples = nas_fixture._initial_random_search()
-    assert new_samples.shape == (nas_fixture.ni, 3)
+def test__initial_random_search(NAS):
+    new_samples = NAS._initial_random_search()
+    assert new_samples.shape == (NAS.ni, 3)
 
-    nas_fixture._update_ensemble(new_samples)
+    NAS._update_ensemble(new_samples)
     assert not np.array_equal(
-        nas_fixture.samples[: nas_fixture.ni], np.zeros((nas_fixture.ni, 3))
+        NAS.samples[: NAS.ni], np.zeros((NAS.ni, 3))
     )
     assert not np.array_equal(
-        nas_fixture.objectives[: nas_fixture.ni], np.zeros(nas_fixture.ni)
+        NAS.objectives[: NAS.ni], np.zeros(NAS.ni)
     )
 
     assert np.array_equal(
-        nas_fixture.samples[nas_fixture.ni :], np.zeros((nas_fixture.nt - nas_fixture.ni, 3))
+        NAS.samples[NAS.ni :], np.zeros((NAS.nt - NAS.ni, 3))
     )
     assert np.array_equal(
-        nas_fixture.objectives[nas_fixture.ni :], np.full(nas_fixture.nt - nas_fixture.ni, np.inf)
+        NAS.objectives[NAS.ni :], np.full(NAS.nt - NAS.ni, np.inf)
     )
 
 
-def test__get_best_indices(nas_fixture):
-    new_samples = nas_fixture._initial_random_search()
-    nas_fixture._update_ensemble(new_samples)
+def test__get_best_indices(NAS):
+    new_samples = NAS._initial_random_search()
+    NAS._update_ensemble(new_samples)
 
-    inds = nas_fixture._get_best_indices()
+    inds = NAS._get_best_indices()
 
-    assert len(inds) == nas_fixture.nr
-    assert np.all(inds < nas_fixture.ni)  # all indices should be from initial random search
+    assert len(inds) == NAS.nr
+    assert np.all(inds < NAS.ni)  # all indices should be from initial random search
     assert not np.array_equal(
-        nas_fixture.samples[inds], np.zeros((nas_fixture.nr, 3))
+        NAS.samples[inds], np.zeros((NAS.nr, 3))
     )  # all samples should be non-zero
     assert not np.array_equal(
-        nas_fixture.objectives[inds], np.zeros(nas_fixture.nr)
+        NAS.objectives[inds], np.zeros(NAS.nr)
     )  # all objectives should be non-zero
