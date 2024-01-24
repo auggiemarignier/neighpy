@@ -19,7 +19,7 @@ class NASearcher:
         Args:
             objective (Callable[[ArrayLike], float]): The objective function to minimize.
                 This function should take a single argument of type ArrayLike and return a float.
-            ns (int): The number of samples in each cell.
+            ns (int): The number of samples generated at each iteration.
             nr (int): The number of cells to resample.
             ni (int): The number of samples from initial random search.
             n (int): The number of iterations.
@@ -32,8 +32,9 @@ class NASearcher:
 
         self.objective = objective
 
-        self.ns = ns  # number of samples in each cell
+        self.ns = ns  # number of samples generated at each iteration
         self.nr = nr  # number of cells to resample
+        self.nspnr = ns // nr  # number of samples per cell to generate TODO: sort out what happens with the remainder
         self.ni = ni  # number of samples from initial random search
         self.n = n  # number of iterations
         self.nt = ni + n * (nr * ns)  # total number of samples
@@ -45,30 +46,46 @@ class NASearcher:
         self.upper = np.array([b[1] for b in bounds])
 
         self.samples = np.zeros((self.nt, self.nd))
-        self.objectives = np.full(self.nt, np.inf)  # start with inf since we want to minimize
+        self.objectives = np.full(
+            self.nt, np.inf
+        )  # start with inf since we want to minimize
 
     def run(self) -> None:
-        self._initial_random_search()
+        # initial random search
+        new_samples = self._initial_random_search()
+        self._update_ensemble(new_samples)
         self.np += self.ni
+
+        # main optimisation loop
         for i in range(1, self.n):
             inds = self._get_best_indices()
             cells_to_resample = self.samples[inds]
             for cell in cells_to_resample:
-                self._resample_cell(cell, inds)
-                self.np += self.ns
+                new_samples = self._resample_cell(cell, inds)
+                self._update_ensemble(new_samples)
+                self.np += self.nspnr
 
     def _initial_random_search(self) -> None:
-        self.X = np.random.uniform(
+        return np.random.uniform(
             low=self.lower,
             high=self.upper,
             size=(self.ni, self.nd),
         )
-        self.samples[: self.ni] = self.X
-        self.objectives[: self.ni] = np.apply_along_axis(self.objective, 1, self.X)
 
     def _get_best_indices(self) -> np.ndarray:
         # there may be a faster way to do this using np.argpartition
         return np.argsort(self.objectives)[: self.nr]
 
     def _resample_cell(self, cell: ArrayLike, inds: np.ndarray) -> None:
-        pass
+        new_samples = np.empty((self.nspnr, self.nd))
+
+        # IMPLEMENT RANDOM WALK HERE
+
+        return new_samples
+
+    def _update_ensemble(self, new_samples):
+        n = new_samples.shape[0]
+        self.samples[self.np : self.np + n] = new_samples
+        self.objectives[self.np : self.np + n] = np.apply_along_axis(
+            self.objective, 1, new_samples
+        )

@@ -6,7 +6,7 @@ from napy import NASearcher
 
 
 def objective(x: ArrayLike) -> float:
-    return np.sum(x)
+    return -np.sum(x)
 
 
 @pytest.fixture
@@ -20,8 +20,10 @@ def nas_fixture():
 
 
 def test__initial_random_search(nas_fixture):
-    nas_fixture._initial_random_search()
+    new_samples = nas_fixture._initial_random_search()
+    assert new_samples.shape == (nas_fixture.ni, 3)
 
+    nas_fixture._update_ensemble(new_samples)
     assert not np.array_equal(
         nas_fixture.samples[: nas_fixture.ni], np.zeros((nas_fixture.ni, 3))
     )
@@ -33,12 +35,14 @@ def test__initial_random_search(nas_fixture):
         nas_fixture.samples[nas_fixture.ni :], np.zeros((nas_fixture.nt - nas_fixture.ni, 3))
     )
     assert np.array_equal(
-        nas_fixture.objectives[nas_fixture.ni :], np.zeros(nas_fixture.nt - nas_fixture.ni)
+        nas_fixture.objectives[nas_fixture.ni :], np.full(nas_fixture.nt - nas_fixture.ni, np.inf)
     )
 
 
 def test__get_best_indices(nas_fixture):
-    nas_fixture._initial_random_search()
+    new_samples = nas_fixture._initial_random_search()
+    nas_fixture._update_ensemble(new_samples)
+
     inds = nas_fixture._get_best_indices()
 
     assert len(inds) == nas_fixture.nr
