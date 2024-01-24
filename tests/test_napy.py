@@ -2,7 +2,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 import pytest
 from scipy.spatial import Voronoi
-from shapely.geometry import LineString
+from shapely.geometry import LineString, Point
 from shapely.ops import polygonize
 import matplotlib.pyplot as plt
 
@@ -56,13 +56,15 @@ def test__get_best_indices(NAS):
 
 
 def test_random_walk_in_voronoi(NAS):
-    new_samples = np.meshgrid(
+    old_samples = np.meshgrid(
         np.linspace(NAS.lower[0], NAS.upper[0], 5),
         np.linspace(NAS.lower[1], NAS.upper[1], 5),
     )
-    points = [
-        [x, y] for x, y in zip(new_samples[0].flatten(), new_samples[1].flatten())
-    ]
+    points = np.array(
+        [[x, y] for x, y in zip(old_samples[0].flatten(), old_samples[1].flatten())]
+    )
+    NAS._update_ensemble(points)
+
     vor = Voronoi(points)
     lines = [
         LineString(vor.vertices[line]) for line in vor.ridge_vertices if -1 not in line
@@ -71,5 +73,18 @@ def test_random_walk_in_voronoi(NAS):
     polys = list(polygonize(lines))
     for poly in polys:
         plt.plot(*poly.exterior.xy, color="black")
-    plt.scatter(*np.array(points).T, color="red")
+    plt.scatter(*points.T, color="red")
+
+    for k, vk in enumerate(vor.points):
+        # find if point has a polygon
+        for poly in polys:
+            if poly.contains(Point(vk)):
+                # perform random walk
+                new_samples = NAS._random_walk_in_voronoi(vk, k)
+                assert new_samples.shape == (NAS.nspnr, NAS.nd)
+                plt.plot(new_samples[:, 0], new_samples[:, 1], "o-", color="blue")
+                for sample in new_samples:
+                    assert poly.contains(Point(sample))
+                break
+
     plt.show()
