@@ -63,6 +63,7 @@ def test_random_walk_in_voronoi(NAS):
     points = np.array(
         [[x, y] for x, y in zip(old_samples[0].flatten(), old_samples[1].flatten())]
     )
+    points += np.random.randn(*points.shape) * 0.1
     NAS._update_ensemble(points)
 
     vor = Voronoi(points)
@@ -91,4 +92,8 @@ def test_random_walk_in_voronoi(NAS):
     plt.axvline(NAS.upper[0], color="black", ls="--")
     plt.axhline(NAS.lower[1], color="black", ls="--")
     plt.axhline(NAS.upper[1], color="black", ls="--")
+
+    eps = 0.05 * np.sqrt(1 / NAS.Cm)
+    plt.xlim(NAS.lower[0] - eps[0], NAS.upper[0] + eps[0])
+    plt.ylim(NAS.lower[1] - eps[1], NAS.upper[1] + eps[1])
     plt.show()
