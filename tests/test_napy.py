@@ -19,7 +19,7 @@ def NAS():
     nr = 5
     ni = 5
     n = 20
-    bounds = ((0.0, 1.0), (0.0, 1.0))
+    bounds = ((-1.0, 1.0), (0.0, 10.0))
     return NASearcher(objective, ns, nr, ni, n, bounds)
 
 
@@ -84,10 +84,11 @@ def test_random_walk_in_voronoi(NAS):
                 assert new_samples.shape == (NAS.nspnr, NAS.nd)
                 plt.plot(new_samples[:, 0], new_samples[:, 1], "o-", color="blue")
                 for sample in new_samples:
+                    # continue
                     assert poly.contains(Point(sample))
                 break
-    plt.axhline(NAS.lower[0], color="black", ls="--")
-    plt.axhline(NAS.upper[0], color="black", ls="--")
-    plt.axvline(NAS.lower[1], color="black", ls="--")
-    plt.axvline(NAS.upper[1], color="black", ls="--")
+    plt.axvline(NAS.lower[0], color="black", ls="--")
+    plt.axvline(NAS.upper[0], color="black", ls="--")
+    plt.axhline(NAS.lower[1], color="black", ls="--")
+    plt.axhline(NAS.upper[1], color="black", ls="--")
     plt.show()
