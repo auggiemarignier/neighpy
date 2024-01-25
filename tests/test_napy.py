@@ -63,7 +63,9 @@ def test_random_walk_in_voronoi(NAS):
     points = np.array(
         [[x, y] for x, y in zip(old_samples[0].flatten(), old_samples[1].flatten())]
     )
-    points += np.random.randn(*points.shape) * 0.1
+    points += np.random.randn(*points.shape) * 0.05
+    for axis in range(NAS.nd):
+        points[:, axis] = np.clip(points[:, axis], NAS.lower[axis], NAS.upper[axis])
     NAS._update_ensemble(points)
 
     vor = Voronoi(points)
