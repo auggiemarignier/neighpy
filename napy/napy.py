@@ -60,7 +60,7 @@ class NASearcher:
         self._update_ensemble(new_samples)
 
         # main optimisation loop
-        for i in range(1, self.n):
+        for _ in range(1, self.n):
             inds = self._get_best_indices()
             self._current_best_ind = inds[0]
             cells_to_resample = self.samples[inds]
