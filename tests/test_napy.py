@@ -104,3 +104,8 @@ def test_random_walk_in_voronoi(NAS):
         plt.xlim(NAS.lower[0] - eps[0], NAS.upper[0] + eps[0])
         plt.ylim(NAS.lower[1] - eps[1], NAS.upper[1] + eps[1])
         plt.show()
+
+
+def test_run(NAS):
+    NAS.run()
+    assert np.all(NAS.objectives[: NAS.ni] != np.inf)
