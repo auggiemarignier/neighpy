@@ -34,7 +34,9 @@ class NASearcher:
 
         self.ns = ns  # number of samples generated at each iteration
         self.nr = nr  # number of cells to resample
-        self.nspnr = ns // nr  # number of samples per cell to generate TODO: sort out what happens with the remainder
+        self.nspnr = (
+            ns // nr
+        )  # number of samples per cell to generate TODO: sort out what happens with the remainder
         self.ni = ni  # number of samples from initial random search
         self.n = n  # number of iterations
         self.nt = ni + n * (nr * ns)  # total number of samples
@@ -54,7 +56,6 @@ class NASearcher:
         # initial random search
         new_samples = self._initial_random_search()
         self._update_ensemble(new_samples)
-        self.np += self.ni
 
         # main optimisation loop
         for i in range(1, self.n):
@@ -63,7 +64,6 @@ class NASearcher:
             for cell in cells_to_resample:
                 new_samples = self._resample_cell(cell, inds)
                 self._update_ensemble(new_samples)
-                self.np += self.nspnr
 
     def _initial_random_search(self) -> None:
         return np.random.uniform(
@@ -76,7 +76,7 @@ class NASearcher:
         # there may be a faster way to do this using np.argpartition
         return np.argsort(self.objectives)[: self.nr]
 
-    def _resample_cell(self, cell: ArrayLike, inds: np.ndarray) -> None:
+    def _resample_cell(self, cell: ArrayLike, inds: np.ndarray) -> ArrayLike:
         new_samples = np.empty((self.nspnr, self.nd))
 
         # IMPLEMENT RANDOM WALK HERE
@@ -89,3 +89,42 @@ class NASearcher:
         self.objectives[self.np : self.np + n] = np.apply_along_axis(
             self.objective, 1, new_samples
         )
+        self.np += n
+
+    def _random_walk_in_voronoi(self, vk: ArrayLike, k: int) -> ArrayLike:
+        # FOLLOWING https://github.com/underworldcode/pyNA/blob/30d1cb7955d6b1389eae885127389ed993fa6940/pyNA/sampler.py#L85
+
+        # vk is the current voronoi cell
+        # k is the index of the current voronoi cell
+
+        new_samples = np.empty((self.nspnr, self.nd))
+        old_samples = self.samples[: self.np]
+        walk_length = self.nspnr
+
+        # find cell boundaries along each dimension
+        d2 = np.sum((vk - old_samples) ** 2, axis=1)  # distance to all other cells
+
+        d2_previous_axis = 0  # distance to previous axis
+
+        for _step in range(walk_length):
+            xA = vk.copy()  # start of walk at cell centre
+            for i in range(self.nd):  # step along each axis
+                d2_current_axis = (xA[i] - old_samples[:, i]) ** 2
+                d2 += d2_previous_axis - d2_current_axis
+                dk2 = d2[k]  # disctance of cell centre to axis
+
+                # eqn (19) Sambridge 1999
+                vji = old_samples[:, i]
+                vki = vk[i]
+                xji = 0.5 * (vki + vji + (dk2 - d2) / (vki - vji))
+
+                # eqns (20, 21) Sambridge 1999
+                li = np.nanmax(np.hstack((self.lower[i], xji[xji < xA[i]])))
+                ui = np.nanmin(np.hstack((self.upper[i], xji[xji > xA[i]])))
+                xA[i] = np.random.uniform(li, ui)
+
+                d2_previous_axis = d2_current_axis
+
+            new_samples[_step] = xA
+
+        return new_samples
