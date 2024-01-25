@@ -34,9 +34,7 @@ class NASearcher:
 
         self.ns = ns  # number of samples generated at each iteration
         self.nr = nr  # number of cells to resample
-        self.nspnr = (
-            ns // nr
-        )  # number of samples per cell to generate TODO: sort out what happens with the remainder
+        self.nspnr = ns // nr  # number of samples per cell to generate
         self.ni = ni  # number of samples from initial random search
         self.n = n  # number of iterations
         self.nt = ni + n * (nr * ns)  # total number of samples
@@ -64,8 +62,8 @@ class NASearcher:
         for i in range(1, self.n):
             inds = self._get_best_indices()
             cells_to_resample = self.samples[inds]
-            for cell in cells_to_resample:
-                new_samples = self._resample_cell(cell, inds)
+            for k, cell in zip(cells_to_resample, inds):
+                new_samples = self._random_walk_in_voronoi(cell, k)
                 self._update_ensemble(new_samples)
 
     def _initial_random_search(self) -> None:
@@ -78,13 +76,6 @@ class NASearcher:
     def _get_best_indices(self) -> np.ndarray:
         # there may be a faster way to do this using np.argpartition
         return np.argsort(self.objectives)[: self.nr]
-
-    def _resample_cell(self, cell: ArrayLike, inds: np.ndarray) -> ArrayLike:
-        new_samples = np.empty((self.nspnr, self.nd))
-
-        # IMPLEMENT RANDOM WALK HERE
-
-        return new_samples
 
     def _update_ensemble(self, new_samples):
         n = new_samples.shape[0]
@@ -103,6 +94,9 @@ class NASearcher:
         new_samples = np.empty((self.nspnr, self.nd))
         old_samples = self.samples[: self.np]
         walk_length = self.nspnr
+        if self.objectives[k] == self.objectives.min():
+            # best model so walk a bit further
+            walk_length += self.ns % self.nr
 
         # find cell boundaries along each dimension
         d2 = np.sum(
