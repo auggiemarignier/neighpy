@@ -69,18 +69,18 @@ class NASearcher:
                 new_samples = self._random_walk_in_voronoi(cell, k)
                 self._update_ensemble(new_samples)
 
-    def _initial_random_search(self) -> None:
+    def _initial_random_search(self) -> ArrayLike:
         return np.random.uniform(
             low=self.lower,
             high=self.upper,
             size=(self.ni, self.nd),
         )
 
-    def _get_best_indices(self) -> np.ndarray:
+    def _get_best_indices(self) -> ArrayLike:
         # there may be a faster way to do this using np.argpartition
         return np.argsort(self.objectives)[: self.nr]
 
-    def _update_ensemble(self, new_samples):
+    def _update_ensemble(self, new_samples: ArrayLike):
         n = new_samples.shape[0]
         self.samples[self.np : self.np + n] = new_samples
         self.objectives[self.np : self.np + n] = np.apply_along_axis(
