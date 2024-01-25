@@ -57,8 +57,8 @@ def test__get_best_indices(NAS):
 
 def test_random_walk_in_voronoi(NAS):
     old_samples = np.meshgrid(
-        np.linspace(NAS.lower[0] - 1, NAS.upper[0] + 1, 5),
-        np.linspace(NAS.lower[1] - 1, NAS.upper[1] + 1, 5),
+        np.random.uniform(NAS.lower[0] - 1, NAS.upper[0] + 1, 5),
+        np.random.uniform(NAS.lower[1] - 1, NAS.upper[1] + 1, 5),
     )
     points = np.array(
         [[x, y] for x, y in zip(old_samples[0].flatten(), old_samples[1].flatten())]
