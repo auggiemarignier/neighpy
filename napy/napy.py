@@ -106,7 +106,11 @@ class NASearcher:
                 # eqn (19) Sambridge 1999
                 vji = old_samples[:, i]
                 vki = vk[i]
-                xji = 0.5 * (vki + vji + (dk2 - d2) / (vki - vji))
+                a = dk2 - d2
+                b = vki - vji
+                xji = 0.5 * (
+                    vki + vji + np.divide(a, b, out=np.zeros_like(a), where=b != 0)
+                )
 
                 # eqns (20, 21) Sambridge 1999
                 li = np.nanmax(np.hstack((self.lower[i], xji[xji < xA[i]])))
