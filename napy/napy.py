@@ -52,6 +52,7 @@ class NASearcher:
         self.objectives = np.full(
             self.nt, np.inf
         )  # start with inf since we want to minimize
+        self._current_best_ind = 0
 
     def run(self) -> None:
         # initial random search
@@ -61,8 +62,10 @@ class NASearcher:
         # main optimisation loop
         for i in range(1, self.n):
             inds = self._get_best_indices()
+            self._current_best_ind = inds[0]
             cells_to_resample = self.samples[inds]
-            for k, cell in zip(cells_to_resample, inds):
+
+            for k, cell in zip(inds, cells_to_resample):
                 new_samples = self._random_walk_in_voronoi(cell, k)
                 self._update_ensemble(new_samples)
 
@@ -94,7 +97,7 @@ class NASearcher:
         new_samples = np.empty((self.nspnr, self.nd))
         old_samples = self.samples[: self.np]
         walk_length = self.nspnr
-        if self.objectives[k] == self.objectives.min():
+        if k == self._current_best_ind:
             # best model so walk a bit further
             walk_length += self.ns % self.nr
 
