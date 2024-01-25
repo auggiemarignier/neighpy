@@ -67,10 +67,33 @@ def test_random_walk_in_voronoi(NAS):
     NAS._update_ensemble(points)
 
     vor = Voronoi(points)
-    lines = [
-        LineString(vor.vertices[line]) for line in vor.ridge_vertices if -1 not in line
-    ]
 
+    # ripped from scipy.spatial.voronoi_plot_2d to get the voronoi polygons
+    center = vor.points.mean(axis=0)
+    ptp_bound = np.ptp(vor.points, axis=0)
+    finite_segments = []
+    infinite_segments = []
+    for pointidx, simplex in zip(vor.ridge_points, vor.ridge_vertices):
+        simplex = np.asarray(simplex)
+        if np.all(simplex >= 0):
+            finite_segments.append(vor.vertices[simplex])
+        else:
+            i = simplex[simplex >= 0][0]  # finite end Voronoi vertex
+
+            t = vor.points[pointidx[1]] - vor.points[pointidx[0]]  # tangent
+            t /= np.linalg.norm(t)
+            n = np.array([-t[1], t[0]])  # normal
+
+            midpoint = vor.points[pointidx].mean(axis=0)
+            direction = np.sign(np.dot(midpoint - center, n)) * n
+            if vor.furthest_site:
+                direction = -direction
+            far_point = vor.vertices[i] + direction * ptp_bound.max()
+
+            infinite_segments.append(np.stack([vor.vertices[i], far_point]))
+    # end of rip
+
+    lines = [LineString(s) for s in finite_segments + infinite_segments]
     polys = list(polygonize(lines))
     for poly in polys:
         plt.plot(*poly.exterior.xy, color="black")
@@ -88,12 +111,12 @@ def test_random_walk_in_voronoi(NAS):
                     # continue
                     assert poly.contains(Point(sample))
                     break
-    plt.axvline(NAS.lower[0], color="black", ls="--")
-    plt.axvline(NAS.upper[0], color="black", ls="--")
-    plt.axhline(NAS.lower[1], color="black", ls="--")
-    plt.axhline(NAS.upper[1], color="black", ls="--")
+    # plt.axvline(NAS.lower[0], color="black", ls="--")
+    # plt.axvline(NAS.upper[0], color="black", ls="--")
+    # plt.axhline(NAS.lower[1], color="black", ls="--")
+    # plt.axhline(NAS.upper[1], color="black", ls="--")
 
-    eps = 0.05 * np.sqrt(1 / NAS.Cm)
-    plt.xlim(NAS.lower[0] - eps[0], NAS.upper[0] + eps[0])
-    plt.ylim(NAS.lower[1] - eps[1], NAS.upper[1] + eps[1])
+    # eps = 0.05 * np.sqrt(1 / NAS.Cm)
+    # plt.xlim(NAS.lower[0] - eps[0], NAS.upper[0] + eps[0])
+    # plt.ylim(NAS.lower[1] - eps[1], NAS.upper[1] + eps[1])
     plt.show()
