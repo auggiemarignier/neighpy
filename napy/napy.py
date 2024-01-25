@@ -76,18 +76,6 @@ class NASearcher:
             size=(self.ni, self.nd),
         )
 
-    def _get_best_indices(self) -> ArrayLike:
-        # there may be a faster way to do this using np.argpartition
-        return np.argsort(self.objectives)[: self.nr]
-
-    def _update_ensemble(self, new_samples: ArrayLike):
-        n = new_samples.shape[0]
-        self.samples[self.np : self.np + n] = new_samples
-        self.objectives[self.np : self.np + n] = np.apply_along_axis(
-            self.objective, 1, new_samples
-        )
-        self.np += n
-
     def _random_walk_in_voronoi(self, vk: ArrayLike, k: int) -> ArrayLike:
         # FOLLOWING https://github.com/underworldcode/pyNA/blob/30d1cb7955d6b1389eae885127389ed993fa6940/pyNA/sampler.py#L85
 
@@ -130,3 +118,15 @@ class NASearcher:
             new_samples[_step] = xA
 
         return new_samples
+
+    def _get_best_indices(self) -> ArrayLike:
+        # there may be a faster way to do this using np.argpartition
+        return np.argsort(self.objectives)[: self.nr]
+
+    def _update_ensemble(self, new_samples: ArrayLike):
+        n = new_samples.shape[0]
+        self.samples[self.np : self.np + n] = new_samples
+        self.objectives[self.np : self.np + n] = np.apply_along_axis(
+            self.objective, 1, new_samples
+        )
+        self.np += n
