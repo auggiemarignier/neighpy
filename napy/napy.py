@@ -46,6 +46,9 @@ class NASearcher:
         self.nd = len(bounds)  # number of dimensions
         self.lower = np.array([b[0] for b in bounds])
         self.upper = np.array([b[1] for b in bounds])
+        self.Cm = (
+            1 / (self.upper - self.lower) ** 2
+        )  # (diagonal) prior covariance matrix
 
         self.samples = np.zeros((self.nt, self.nd))
         self.objectives = np.full(
@@ -102,14 +105,16 @@ class NASearcher:
         walk_length = self.nspnr
 
         # find cell boundaries along each dimension
-        d2 = np.sum((vk - old_samples) ** 2, axis=1)  # distance to all other cells
+        d2 = np.sum(
+            self.Cm * (vk - old_samples) ** 2, axis=1
+        )  # distance to all other cells
 
         d2_previous_axis = 0  # distance to previous axis
 
         for _step in range(walk_length):
             xA = vk.copy()  # start of walk at cell centre
             for i in range(self.nd):  # step along each axis
-                d2_current_axis = (xA[i] - old_samples[:, i]) ** 2
+                d2_current_axis = self.Cm[i] * (xA[i] - old_samples[:, i]) ** 2
                 d2 += d2_previous_axis - d2_current_axis
                 dk2 = d2[k]  # disctance of cell centre to axis
 
