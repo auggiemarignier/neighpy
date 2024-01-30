@@ -82,6 +82,8 @@ class NAAppariser:
         Returns the index of the next cell along the axis that shares a boundary with the kth cell,
         the intersection point, and whether the bound is reached.
         """
+        assert not (down and up)
+
         # eqn (19) Sambridge 1999
         vk = self.initial_ensemble[k]
         vki = vk[axis]
@@ -95,18 +97,15 @@ class NAAppariser:
         xji = 0.5 * (vki + vji + np.divide(a, b, out=np.zeros_like(a), where=b != 0))
 
         if down:
-            xji = np.ma.array(xji, mask=vki <= vji)
-            if xji.count() > 0:  # valid intersections found
-                k_new = np.argmax(xji)  # closest to vk
-                return k_new, xji[k_new], False
-            else:
-                return None, None, True
-        elif up:
-            xji = np.ma.array(xji, mask=vki >= vji)
-            if xji.count() > 1:
-                k_new = np.argmin(xji)
-                return k_new, xji[k_new], False
-            else:
-                return None, None, True
+            mask = vki <= vji
+            closest = np.argmax
         else:
-            raise ValueError("Must specify up or down")
+            mask = vki >= vji
+            closest = np.argmin
+
+        xji = np.ma.array(xji, mask=mask)
+        if xji.count() > 0:  # valid intersections found
+            k_new = closest(xji)  # closest to vk
+            return k_new, xji[k_new], False
+        else:
+            return None, None, True
