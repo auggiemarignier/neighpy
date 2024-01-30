@@ -42,22 +42,28 @@ def test_axis_intersections(NAA):
     vk = np.array([0.0, 0.0])
     k = np.argmin(np.sum((NAA.initial_ensemble - vk) ** 2, axis=1))
 
+    axis = 0  # hoizontal axis
+    h_intersections = NAA.axis_intersections(axis, k)
+    vk_row = NAA.initial_ensemble.reshape(5, 5, 2)[2, :, axis]
+    true_h_intersections = vk_row[:-1] + (vk_row[1:] - vk_row[:-1]) / 2
+    assert h_intersections == pytest.approx(true_h_intersections)
+
+    axis = 1  # vertical axis
+    v_intersections = NAA.axis_intersections(axis, k)
+    vk_col = NAA.initial_ensemble.reshape(5, 5, 2)[:, 2, axis]
+    true_v_intersections = vk_col[:-1] + (vk_col[1:] - vk_col[:-1]) / 2
+    assert v_intersections == pytest.approx(true_v_intersections)
+
     if _plot:
         plt.scatter(*NAA.initial_ensemble.T)
         plt.scatter(*vk, c="r")
-
-    for i in range(NAA.nd):
-        intersections = NAA.axis_intersections(i, k)
-        vk_row = NAA.initial_ensemble.reshape(5, 5, 2)[2, :, i]
-        true_intersections = vk_row[:-1] + (vk_row[1:] - vk_row[:-1]) / 2
-
-        if _plot:
-            for l in true_intersections:
-                plt.axvline(l, c="k", ls="--")
-            for l in intersections:
-                plt.axvline(l, c="b", ls="-")
-
-        assert intersections == pytest.approx(true_intersections)
-        break  # only testing one axis for now
+        for l in true_h_intersections:
+            plt.axvline(l, c="g")
+        for l in h_intersections:
+            plt.axvline(l, c="b", ls=(0, (3, 10, 1, 10)))
+        for l in true_v_intersections:
+            plt.axhline(l, c="g")
+        for l in v_intersections:
+            plt.axhline(l, c="b", ls=(0, (3, 10, 1, 10)))
 
     plt.show()
