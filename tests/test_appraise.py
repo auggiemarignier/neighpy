@@ -12,11 +12,11 @@ def objective(x: ArrayLike) -> float:
 
 @pytest.fixture
 def NAA():
-    lower = -1.0
-    upper = 1.0
+    lower = [-1.0, 0.0]
+    upper = (1.0, 10)
     initial_ensemble = np.meshgrid(  # regular grid
-        np.linspace(lower, upper, 5),
-        np.linspace(lower, upper, 5),
+        np.linspace(lower[0], upper[0], 5),
+        np.linspace(lower[1], upper[1], 5),
     )
     initial_ensemble = np.array(
         [
@@ -27,7 +27,7 @@ def NAA():
         ]
     )
     objectives = np.apply_along_axis(objective, 1, initial_ensemble)
-    bounds = ((lower, upper), (lower, upper))
+    bounds = ((lower[0], upper[0]), (lower[1], upper[1]))
     n_resample = 10
     n_walkers = 1
     return NAAppariser(initial_ensemble, objectives, bounds, n_resample, n_walkers)
