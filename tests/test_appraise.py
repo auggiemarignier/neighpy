@@ -15,9 +15,9 @@ def NAA():
     lower = [-1.0, 0.0]
     upper = (1.0, 10)
     initial_ensemble = np.meshgrid(  # regular grid
-        np.linspace(lower[0], upper[0], 5),
-        np.linspace(lower[1], upper[1], 5),
-    )
+        np.sort(np.random.uniform(lower[0], upper[0], 5)),
+        np.sort(np.random.uniform(lower[1], upper[1], 5)),
+    )  # sorting needed to calculate true intersections in test_axis_intersections
     initial_ensemble = np.array(
         [
             [x, y]
@@ -39,18 +39,22 @@ def test_axis_intersections(NAA):
     # halfway between the cell centres and prior bounds
     _plot = False
 
-    vk = np.array([0.0, 0.0])
-    k = np.argmin(np.sum((NAA.initial_ensemble - vk) ** 2, axis=1))
+    # Choose a random cell from the ensemble
+    k = np.random.randint(0, NAA.Ne)
+    vk = NAA.initial_ensemble[k]
+
+    # Determine 2D indices of cell
+    i, j = np.unravel_index(k, (5, 5))
 
     axis = 0  # hoizontal axis
     h_intersections = NAA.axis_intersections(axis, k)
-    vk_row = NAA.initial_ensemble.reshape(5, 5, 2)[2, :, axis]
+    vk_row = NAA.initial_ensemble.reshape(5, 5, 2)[i, :, axis]
     true_h_intersections = vk_row[:-1] + (vk_row[1:] - vk_row[:-1]) / 2
     assert h_intersections == pytest.approx(true_h_intersections)
 
     axis = 1  # vertical axis
     v_intersections = NAA.axis_intersections(axis, k)
-    vk_col = NAA.initial_ensemble.reshape(5, 5, 2)[:, 2, axis]
+    vk_col = NAA.initial_ensemble.reshape(5, 5, 2)[:, j, axis]
     true_v_intersections = vk_col[:-1] + (vk_col[1:] - vk_col[:-1]) / 2
     assert v_intersections == pytest.approx(true_v_intersections)
 
