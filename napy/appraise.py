@@ -46,23 +46,26 @@ class NAAppariser:
                 accepted = True
                 return xpi
 
-    def axis_intersections(self, axis: int, k: int):
+    def axis_intersections(self, axis: int, k: int) -> tuple[ArrayLike, ArrayLike]:
         """
         Calculate the intersections of an axis passing through point vk in the kth cell
         with the boundaries of all cells
 
-        Returns the intersection points.
+        Returns the intersection points and the cells the axis passes through
         """
 
-        down = self._travel_along_axis(axis, k, down=True)
-        up = self._travel_along_axis(axis, k, up=True)
+        down_intersections, down_cells = self._travel_along_axis(axis, k, down=True)
+        up_intersections, up_cells = self._travel_along_axis(axis, k, up=True)
 
-        return np.array(sorted(down + up))
+        return np.array(sorted(down_intersections + up_intersections)), np.array(
+            sorted(down_cells + up_cells + [k])
+        )
 
     def _travel_along_axis(
         self, axis: int, k: int, down: bool = False, up: bool = False
     ) -> list:
         intersections = []
+        cells_traversed = []
         next_cell = k
         bound_reached = False
         while not bound_reached:
@@ -71,10 +74,11 @@ class NAAppariser:
             )
             if intersection is not None and _next_cell is not None:
                 intersections.append(intersection)
+                cells_traversed.append(_next_cell)
                 next_cell = _next_cell
             else:
                 break
-        return intersections
+        return intersections, cells_traversed
 
     def _get_axis_intersection(
         self, axis: int, k: int, down: bool = False, up: bool = False
