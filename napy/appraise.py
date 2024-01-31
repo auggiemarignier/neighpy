@@ -29,15 +29,23 @@ class NAAppariser:
         """
         Perform the appraisal stage of the Neighbourhood Algorithm.
         """
-        start_point = self.initial_ensemble[-1]  # This will change at some point
+        k = self.Ne - 1
+        start_point = self.initial_ensemble[k]  # This will change at some point
         for _ in range(self.Nr):
-            vk = start_point
-            for i, xji in enumerate(self._voronoi._cell_axis_intersections(vk, -1)):
-                vk[i] = self._random_step(xji)
+            vk = start_point.copy()
+            for i in range(self.nd):
+                intersections, cells = self.axis_intersections(i, k)
+                xpi = self._random_step(vk[i], i)
+                vk[i] = xpi
 
-    def _random_step(self, xji):
-        xpi = np.random.uniform(self.lower, self.upper)  # fix the limits
+    def _random_step(self, axis, intersections, cells):
+        """
+        intersections are the points where the axis intersects the boundaries of the cells
+        """
+        xpi = np.random.uniform(self.lower[axis], self.upper[axis])  # proposed step
         r = np.random.uniform(0, 1)
+
+        # Construct conditional probability distribution
         Pxpi = 0  # fix this
         Pmax = 1  # fix this
         accepted = False
@@ -55,10 +63,15 @@ class NAAppariser:
         """
 
         down_intersections, down_cells = self._travel_along_axis(axis, k, down=True)
+        # reverse the order of the down intersections and cells
+        # so that the order of the intersections is from lowest to highest
+        down_intersections = down_intersections[::-1]
+        down_cells = down_cells[::-1]
+
         up_intersections, up_cells = self._travel_along_axis(axis, k, up=True)
 
         return np.array(down_intersections + up_intersections), np.array(
-            down_cells + up_cells + [k]
+            down_cells + [k] + up_cells
         )
 
     def _travel_along_axis(
@@ -116,3 +129,18 @@ class NAAppariser:
             return k_new, xji[k_new], False
         else:
             return None, None, True
+
+    def _identify_cell(
+        self, xp: float, intersections: ArrayLike, cells: ArrayLike
+    ) -> int:
+        """
+        Given a set of intersections and the cells they pass through,
+        identify the cell that contains the point xp.
+        """
+        closest_intersection = np.argmin(np.abs(intersections - xp))
+        cell_id = (
+            closest_intersection
+            if xp < intersections[closest_intersection]
+            else closest_intersection + 1
+        )
+        return cells[cell_id]

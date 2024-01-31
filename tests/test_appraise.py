@@ -34,9 +34,8 @@ def NAA():
 
 
 def test_axis_intersections(NAA):
-    # starting at point (0,0) on an evenly spaced grid of cells
     # the axis intersections with cell boundaries should be
-    # halfway between the cell centres and prior bounds
+    # halfway between the cell centres
     _plot = False
 
     # Choose a random cell from the ensemble
@@ -74,9 +73,8 @@ def test_axis_intersections(NAA):
 
 
 def test_axis_intersections_cells(NAA):
-    # starting at point (0,0) on an evenly spaced grid of cells
     # the axis intersections with cell boundaries should be
-    # halfway between the cell centres and prior bounds
+    # halfway between the cell centres
     _plot = False
 
     # Choose a random cell from the ensemble
@@ -105,3 +103,21 @@ def test_axis_intersections_cells(NAA):
         plt.scatter(*vk, c="r")
 
     plt.show()
+
+
+@pytest.mark.parametrize("true_cell", [0, 1, 2, 3, 4])
+def test__identify_cell(NAA, true_cell):
+    intersections = np.sort(np.random.uniform(size=4))
+    cells = np.arange(5)
+
+    # cell bounds
+    cell_low = intersections[true_cell - 1] if true_cell != 0 else 0
+    cell_high = intersections[true_cell] if true_cell != 4 else 1
+
+    # random point in cell
+    xp = np.random.uniform(cell_low, cell_high)
+
+    # identify cell
+    cell = NAA._identify_cell(xp, intersections, cells)
+
+    assert cell == true_cell
