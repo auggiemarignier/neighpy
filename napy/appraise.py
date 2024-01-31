@@ -57,8 +57,8 @@ class NAAppariser:
         down_intersections, down_cells = self._travel_along_axis(axis, k, down=True)
         up_intersections, up_cells = self._travel_along_axis(axis, k, up=True)
 
-        return np.array(sorted(down_intersections + up_intersections)), np.array(
-            sorted(down_cells + up_cells + [k])
+        return np.array(down_intersections + up_intersections), np.array(
+            down_cells + up_cells + [k]
         )
 
     def _travel_along_axis(
