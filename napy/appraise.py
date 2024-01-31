@@ -35,7 +35,7 @@ class NAAppariser:
             vk = start_point.copy()
             for i in range(self.nd):
                 intersections, cells = self.axis_intersections(i, k)
-                xpi = self._random_step(vk[i], i)
+                xpi = self._random_step(i, intersections, cells)
                 vk[i] = xpi
 
     def _random_step(self, axis, intersections, cells):
@@ -43,14 +43,14 @@ class NAAppariser:
         intersections are the points where the axis intersects the boundaries of the cells
         """
         xpi = np.random.uniform(self.lower[axis], self.upper[axis])  # proposed step
-        r = np.random.uniform(0, 1)
+        k = self._identify_cell(xpi, intersections, cells)  # cell containing xpi
 
-        # Construct conditional probability distribution
-        Pxpi = 0  # fix this
-        Pmax = 1  # fix this
+        r = np.random.uniform(0, 1)
+        Pxpi = self.objectives[k]
+        Pmax = np.max(self.objectives[cells])
         accepted = False
         while not accepted:
-            if np.log(r) < np.log(Pxpi) - np.log(Pmax):
+            if np.log(r) < np.log(Pxpi) - np.log(Pmax):  # eqn (24) Sambridge 1999(II)
                 accepted = True
                 return xpi
 
