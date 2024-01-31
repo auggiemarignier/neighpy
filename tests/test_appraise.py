@@ -121,3 +121,7 @@ def test__identify_cell(NAA, true_cell):
     cell = NAA._identify_cell(xp, intersections, cells)
 
     assert cell == true_cell
+
+
+def test_appraise(NAA):
+    NAA.appraise()

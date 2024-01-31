@@ -28,28 +28,49 @@ class NAAppariser:
     def appraise(self):
         """
         Perform the appraisal stage of the Neighbourhood Algorithm.
+
+        Calculates a few basic MC integrals
         """
-        k = self.Ne - 1
-        start_point = self.initial_ensemble[k]  # This will change at some point
+
+        def g_mean(x):
+            return x
+
+        mean = np.zeros(self.nd)
+        for x in self.random_walk_through_parameter_space():
+            mean += g_mean(x)
+
+        return {
+            "mean": mean / self.Nr,
+        }
+
+    def random_walk_through_parameter_space(self):
+        """
+        Perform the random walk through parameter space.
+        Yields a new sample at each iteration to be used for calculating summary statistics.
+        """
+        k = (
+            self.Ne - 1
+        )  # start at the last cell for now. ultimately this will be random
+        vk = self.initial_ensemble[k]  # This will change at some point
         for _ in range(self.Nr):
-            vk = start_point.copy()
             for i in range(self.nd):
                 intersections, cells = self.axis_intersections(i, k)
                 xpi = self._random_step(i, intersections, cells)
                 vk[i] = xpi
+            yield vk
 
     def _random_step(self, axis, intersections, cells):
         """
         intersections are the points where the axis intersects the boundaries of the cells
         """
-        xpi = np.random.uniform(self.lower[axis], self.upper[axis])  # proposed step
-        k = self._identify_cell(xpi, intersections, cells)  # cell containing xpi
-
-        r = np.random.uniform(0, 1)
-        Pxpi = self.objectives[k]
-        Pmax = np.max(self.objectives[cells])
         accepted = False
         while not accepted:
+            xpi = np.random.uniform(self.lower[axis], self.upper[axis])  # proposed step
+            k = self._identify_cell(xpi, intersections, cells)  # cell containing xpi
+
+            r = np.random.uniform(0, 1)
+            Pxpi = self.objectives[k]
+            Pmax = np.max(self.objectives[cells])
             if np.log(r) < np.log(Pxpi) - np.log(Pmax):  # eqn (24) Sambridge 1999(II)
                 accepted = True
                 return xpi
