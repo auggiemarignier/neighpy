@@ -1,5 +1,6 @@
 import numpy as np
 from numpy.typing import ArrayLike
+import warnings
 
 
 class NAAppariser:
@@ -94,13 +95,15 @@ class NAAppariser:
         )  # perpendicular distance to current axis
         a = d2i[k] - d2i
         b = self.Cm[axis] * (vki - vji)
-        xji = 0.5 * (vki + vji + np.divide(a, b, out=np.zeros_like(a), where=b != 0))
+        with warnings.catch_warnings(action="ignore"):
+            xji = 0.5 * (vki + vji + a / b)
 
         if down:
-            mask = vki <= vji
+            # isfinite check handles previous divide by zero
+            mask = (vki <= vji) | ~np.isfinite(xji)
             closest = np.argmax
         else:
-            mask = vki >= vji
+            mask = (vki >= vji) | ~np.isfinite(xji)
             closest = np.argmin
 
         xji = np.ma.array(xji, mask=mask)
