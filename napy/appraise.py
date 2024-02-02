@@ -25,7 +25,7 @@ class NAAppariser:
         self.j = n_walkers if n_walkers >= 1 else 1
         self.nr = self.Nr // self.j
 
-    def appraise(self):
+    def appraise(self, save: bool = False):
         """
         Perform the appraisal stage of the Neighbourhood Algorithm.
 
@@ -38,18 +38,25 @@ class NAAppariser:
         def g_covariance_cross(x):
             return np.outer(x, x)
 
+        if save:
+            samples = []
         mean = np.zeros(self.nd)
         cov_crossterm = np.zeros((self.nd, self.nd))
         for x in self.random_walk_through_parameter_space():
             mean += g_mean(x)
             cov_crossterm += g_covariance_cross(x)
+            if save:
+                samples.append(x)
         mean /= self.Nr
         covariance = cov_crossterm / self.Nr - np.outer(mean, mean)
 
-        return {
+        results = {
             "mean": mean,
             "covariance": covariance,
         }
+        if save:
+            results["samples"] = np.array(samples)
+        return results
 
     def random_walk_through_parameter_space(self):
         """
