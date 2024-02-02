@@ -127,3 +127,12 @@ def test_appraise(NAA):
     results = NAA.appraise()
     assert results["mean"].shape == (2,)
     assert results["covariance"].shape == (2, 2)
+
+
+def test_MC_integrals(NAA):
+    results = NAA.appraise(save=True)
+    mean = np.mean(results["samples"], axis=0)
+    covariance = np.cov(results["samples"], rowvar=False)
+
+    assert results["mean"] == pytest.approx(mean)
+    assert results["covariance"] == pytest.approx(covariance)
