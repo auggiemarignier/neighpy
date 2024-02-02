@@ -35,12 +35,20 @@ class NAAppariser:
         def g_mean(x):
             return x
 
+        def g_covariance_cross(x):
+            return np.outer(x, x)
+
         mean = np.zeros(self.nd)
+        cov_crossterm = np.zeros((self.nd, self.nd))
         for x in self.random_walk_through_parameter_space():
             mean += g_mean(x)
+            cov_crossterm += g_covariance_cross(x)
+        mean /= self.Nr
+        covariance = cov_crossterm / self.Nr - np.outer(mean, mean)
 
         return {
-            "mean": mean / self.Nr,
+            "mean": mean,
+            "covariance": covariance,
         }
 
     def random_walk_through_parameter_space(self):

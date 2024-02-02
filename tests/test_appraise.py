@@ -7,7 +7,7 @@ from napy import NAAppariser
 
 
 def objective(x: ArrayLike) -> float:
-    return -np.sum(x)
+    return np.exp(-np.sum(x))
 
 
 @pytest.fixture
@@ -124,4 +124,6 @@ def test__identify_cell(NAA, true_cell):
 
 
 def test_appraise(NAA):
-    NAA.appraise()
+    results = NAA.appraise()
+    assert results["mean"].shape == (2,)
+    assert results["covariance"].shape == (2, 2)
