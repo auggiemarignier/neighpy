@@ -39,7 +39,7 @@ class NASearcher:
         self.nspnr = ns // nr  # number of samples per cell to generate
         self.ni = ni  # number of samples from initial random search
         self.n = n  # number of iterations
-        self.nt = ni + n * (nr * ns)  # total number of samples
+        self.nt = ni + n * ns  # total number of samples
         self.np = 0  # running total of number of samples
 
         self.bounds = bounds  # bounds of the search space
@@ -64,7 +64,7 @@ class NASearcher:
         self._update_ensemble(new_samples)
 
         # main optimisation loop
-        for _ in range(1, self.n):
+        for _ in range(self.n):
             inds = self._get_best_indices()
             self._current_best_ind = inds[0]
             cells_to_resample = self.samples[inds]

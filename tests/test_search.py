@@ -108,4 +108,12 @@ def test_random_walk_in_voronoi(NAS):
 
 def test_run(NAS):
     NAS.run()
-    assert np.all(NAS.objectives[: NAS.ni] != np.inf)
+    assert np.all(NAS.objectives != np.inf)
+    assert np.all(NAS.samples != 0)
+    assert np.all(NAS.samples != np.inf)
+    assert np.all(NAS.samples != -np.inf)
+    assert np.all(NAS.samples != np.nan)
+    assert np.all(NAS.samples != -np.nan)
+    assert np.all(NAS.samples >= NAS.lower)
+    assert np.all(NAS.samples <= NAS.upper)
+    assert NAS.np == NAS.nt
