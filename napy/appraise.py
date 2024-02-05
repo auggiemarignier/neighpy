@@ -46,7 +46,7 @@ class NAAppariser:
             mean += g_mean(x)
             cov_crossterm += g_covariance_cross(x)
             if save:
-                samples.append(x)
+                samples.append(x.copy())
         mean /= self.Nr
         covariance = cov_crossterm / self.Nr - np.outer(mean, mean)
 
