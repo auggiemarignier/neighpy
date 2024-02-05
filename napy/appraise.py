@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.typing import ArrayLike
 import warnings
+from joblib import Parallel, delayed
 
 
 class NAAppariser:
@@ -32,35 +33,21 @@ class NAAppariser:
         Calculates a few basic MC integrals
         """
 
-        def g_mean(x):
-            return x
-
-        def g_covariance_cross(x):
-            return np.outer(x, x)
-
         if save:
             samples = np.zeros((self.j, self.nr, self.nd))
         mean = np.zeros(self.nd)
         cov_crossterm = np.zeros((self.nd, self.nd))
 
-        for j in range(self.j):  # send off multiple walkers
-            if save:
-                j_samples = np.zeros((self.nr, self.nd))
-                _i = 0
-            j_mean = np.zeros(self.nd)
-            j_cov_crossterm = np.zeros((self.nd, self.nd))
+        with Parallel(n_jobs=self.j) as parallel:
+            results = parallel(delayed(self._appraise)(save) for _ in range(self.j))
+            for j, j_results in enumerate(results):
+                j_mean, j_cov_crossterm = j_results[:-1]
 
-            for x in self.random_walk_through_parameter_space():
-                j_mean += g_mean(x)
-                j_cov_crossterm += g_covariance_cross(x)
+                mean += j_mean / self.nr
+                cov_crossterm += j_cov_crossterm / self.nr
                 if save:
-                    j_samples[_i] = x.copy()
-                    _i += 1
-
-            mean += j_mean / self.nr
-            cov_crossterm += j_cov_crossterm / self.nr
-            if save:
-                samples[j] = j_samples
+                    j_samples = j_results[-1]
+                    samples[j] = j_samples
 
         mean /= self.j
         covariance = cov_crossterm / self.j - np.outer(mean, mean)
@@ -71,6 +58,25 @@ class NAAppariser:
         }
         if save:
             results["samples"] = samples.reshape(-1, self.nd)
+        return results
+
+    def _appraise(self, save: bool = False):
+        if save:
+            j_samples = np.zeros((self.nr, self.nd))
+            _i = 0
+        j_mean = np.zeros(self.nd)
+        j_cov_crossterm = np.zeros((self.nd, self.nd))
+
+        for x in self.random_walk_through_parameter_space():
+            j_mean += NAAppariser.g_mean(x)
+            j_cov_crossterm += NAAppariser.g_covariance_cross(x)
+            if save:
+                j_samples[_i] = x.copy()
+                _i += 1
+
+        results = (j_mean, j_cov_crossterm)
+        if save:
+            results += (j_samples,)
         return results
 
     def random_walk_through_parameter_space(self):
@@ -203,3 +209,11 @@ class NAAppariser:
             else closest_intersection + 1
         )
         return cells[cell_id]
+
+    @staticmethod
+    def g_mean(x):
+        return x
+
+    @staticmethod
+    def g_covariance_cross(x):
+        return np.outer(x, x)
