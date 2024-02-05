@@ -136,3 +136,4 @@ def test_MC_integrals(NAA):
 
     assert results["mean"] == pytest.approx(mean)
     assert results["covariance"] == pytest.approx(covariance)
+    assert results["samples"].shape == (NAA.nr * NAA.j, 2)
