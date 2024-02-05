@@ -29,14 +29,14 @@ def NAA():
     objectives = np.apply_along_axis(objective, 1, initial_ensemble)
     bounds = ((lower[0], upper[0]), (lower[1], upper[1]))
     n_resample = 10
-    n_walkers = 1
+    n_walkers = 2
     return NAAppariser(initial_ensemble, objectives, bounds, n_resample, n_walkers)
 
 
 def test_axis_intersections(NAA):
     # the axis intersections with cell boundaries should be
     # halfway between the cell centres
-    _plot = True
+    _plot = False
 
     # Choose a random cell from the ensemble
     k = np.random.randint(0, NAA.Ne)

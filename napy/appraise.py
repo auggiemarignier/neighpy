@@ -39,23 +39,38 @@ class NAAppariser:
             return np.outer(x, x)
 
         if save:
-            samples = []
+            samples = np.zeros((self.j, self.nr, self.nd))
         mean = np.zeros(self.nd)
         cov_crossterm = np.zeros((self.nd, self.nd))
-        for x in self.random_walk_through_parameter_space():
-            mean += g_mean(x)
-            cov_crossterm += g_covariance_cross(x)
+
+        for j in range(self.j):  # send off multiple walkers
             if save:
-                samples.append(x.copy())
-        mean /= self.Nr
-        covariance = cov_crossterm / self.Nr - np.outer(mean, mean)
+                j_samples = np.zeros((self.nr, self.nd))
+                _i = 0
+            j_mean = np.zeros(self.nd)
+            j_cov_crossterm = np.zeros((self.nd, self.nd))
+
+            for x in self.random_walk_through_parameter_space():
+                j_mean += g_mean(x)
+                j_cov_crossterm += g_covariance_cross(x)
+                if save:
+                    j_samples[_i] = x.copy()
+                    _i += 1
+
+            mean += j_mean / self.nr
+            cov_crossterm += j_cov_crossterm / self.nr
+            if save:
+                samples[j] = j_samples
+
+        mean /= self.j
+        covariance = cov_crossterm / self.j - np.outer(mean, mean)
 
         results = {
             "mean": mean,
             "covariance": covariance,
         }
         if save:
-            results["samples"] = np.array(samples)
+            results["samples"] = samples.reshape(-1, self.nd)
         return results
 
     def random_walk_through_parameter_space(self):
@@ -67,7 +82,7 @@ class NAAppariser:
             self.Ne - 1
         )  # start at the last cell for now. ultimately this will be random
         xA = self.initial_ensemble[k].copy()  # This will change at some point
-        for _ in range(self.Nr):
+        for _ in range(self.nr):
             for i in range(self.nd):
                 intersections, cells = self.axis_intersections(i, xA)
                 xpi = self.random_step(i, intersections, cells)
