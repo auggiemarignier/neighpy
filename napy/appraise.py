@@ -39,15 +39,25 @@ class NAAppariser:
         cov_crossterm = np.zeros((self.nd, self.nd))
 
         with Parallel(n_jobs=self.j) as parallel:
-            results = parallel(delayed(self._appraise)(save) for _ in range(self.j))
-            for j, j_results in enumerate(results):
-                j_mean, j_cov_crossterm = j_results[:-1]
+            # select start points for the random walks
+            # ensure that at least one walker starts at the best cell
+            start_points = np.random.choice(self.Ne, self.j, replace=False)
+            start_points[0] = np.argmin(self.objectives)
 
-                mean += j_mean / self.nr
-                cov_crossterm += j_cov_crossterm / self.nr
-                if save:
-                    j_samples = j_results[-1]
-                    samples[j] = j_samples
+            # run the walkers in parallel
+            results = parallel(
+                delayed(self._appraise)(save, start) for start in start_points
+            )
+
+        # combine the results
+        for j, j_results in enumerate(results):
+            j_mean, j_cov_crossterm = j_results[:-1]
+
+            mean += j_mean / self.nr
+            cov_crossterm += j_cov_crossterm / self.nr
+            if save:
+                j_samples = j_results[-1]
+                samples[j] = j_samples
 
         mean /= self.j
         covariance = cov_crossterm / self.j - np.outer(mean, mean)
@@ -60,14 +70,14 @@ class NAAppariser:
             results["samples"] = samples.reshape(-1, self.nd)
         return results
 
-    def _appraise(self, save: bool = False):
+    def _appraise(self, save: bool = False, start_k: int = 0):
         if save:
             j_samples = np.zeros((self.nr, self.nd))
             _i = 0
         j_mean = np.zeros(self.nd)
         j_cov_crossterm = np.zeros((self.nd, self.nd))
 
-        for x in self.random_walk_through_parameter_space():
+        for x in self.random_walk_through_parameter_space(start_k):
             j_mean += NAAppariser.g_mean(x)
             j_cov_crossterm += NAAppariser.g_covariance_cross(x)
             if save:
@@ -79,15 +89,12 @@ class NAAppariser:
             results += (j_samples,)
         return results
 
-    def random_walk_through_parameter_space(self):
+    def random_walk_through_parameter_space(self, start_k: int = 0):
         """
         Perform the random walk through parameter space.
         Yields a new sample at each iteration to be used for calculating summary statistics.
         """
-        k = (
-            self.Ne - 1
-        )  # start at the last cell for now. ultimately this will be random
-        xA = self.initial_ensemble[k].copy()  # This will change at some point
+        xA = self.initial_ensemble[start_k].copy()  # This will change at some point
         for _ in range(self.nr):
             for i in range(self.nd):
                 intersections, cells = self.axis_intersections(i, xA)
