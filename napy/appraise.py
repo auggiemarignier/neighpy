@@ -66,29 +66,13 @@ class NAAppariser:
         k = (
             self.Ne - 1
         )  # start at the last cell for now. ultimately this will be random
-        vk = self.initial_ensemble[k]  # This will change at some point
+        xA = self.initial_ensemble[k].copy()  # This will change at some point
         for _ in range(self.Nr):
             for i in range(self.nd):
-                intersections, cells = self.axis_intersections(i, k)
-                xpi = self._random_step(i, intersections, cells)
-                vk[i] = xpi
-            yield vk
-
-    def _random_step(self, axis, intersections, cells):
-        """
-        intersections are the points where the axis intersects the boundaries of the cells
-        """
-        accepted = False
-        while not accepted:
-            xpi = np.random.uniform(self.lower[axis], self.upper[axis])  # proposed step
-            k = self._identify_cell(xpi, intersections, cells)  # cell containing xpi
-
-            r = np.random.uniform(0, 1)
-            Pxpi = self.objectives[k]
-            Pmax = np.max(self.objectives[cells])
-            if np.log(r) < np.log(Pxpi) - np.log(Pmax):  # eqn (24) Sambridge 1999(II)
-                accepted = True
-                return xpi
+                intersections, cells = self.axis_intersections(i, xA)
+                xpi = self.random_step(i, intersections, cells)
+                xA[i] = xpi
+            yield xA
 
     def axis_intersections(
         self, axis: int, xA: ArrayLike
@@ -126,6 +110,20 @@ class NAAppariser:
         return np.array(down_intersections + up_intersections), np.array(
             down_cells + [k] + up_cells
         )
+
+    def random_step(self, axis, intersections, cells):
+        """
+        intersections are the points where the axis intersects the boundaries of the cells
+        """
+        while True:
+            xpi = np.random.uniform(self.lower[axis], self.upper[axis])  # proposed step
+            k = self._identify_cell(xpi, intersections, cells)  # cell containing xpi
+
+            r = np.random.uniform(0, 1)
+            Pxpi = self.objectives[k]
+            Pmax = np.max(self.objectives[cells])
+            if np.log(r) < np.log(Pxpi) - np.log(Pmax):  # eqn (24) Sambridge 1999(II)
+                return xpi
 
     def _get_axis_intersections(
         self, axis: int, k: int, di2: ArrayLike, down: bool = False, up: bool = False
