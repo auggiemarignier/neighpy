@@ -36,7 +36,7 @@ def NAA():
 def test_axis_intersections(NAA):
     # the axis intersections with cell boundaries should be
     # halfway between the cell centres
-    _plot = False
+    _plot = True
 
     # Choose a random cell from the ensemble
     k = np.random.randint(0, NAA.Ne)
@@ -46,13 +46,13 @@ def test_axis_intersections(NAA):
     i, j = np.unravel_index(k, (5, 5))
 
     axis = 0  # hoizontal axis
-    h_intersections, _ = NAA.axis_intersections(axis, k)
+    h_intersections, _ = NAA.axis_intersections(axis, vk)
     vk_row = NAA.initial_ensemble.reshape(5, 5, 2)[i, :, axis]
     true_h_intersections = vk_row[:-1] + (vk_row[1:] - vk_row[:-1]) / 2
     assert np.sort(h_intersections) == pytest.approx(true_h_intersections)
 
     axis = 1  # vertical axis
-    v_intersections, _ = NAA.axis_intersections(axis, k)
+    v_intersections, _ = NAA.axis_intersections(axis, vk)
     vk_col = NAA.initial_ensemble.reshape(5, 5, 2)[:, j, axis]
     true_v_intersections = vk_col[:-1] + (vk_col[1:] - vk_col[:-1]) / 2
     assert np.sort(v_intersections) == pytest.approx(true_v_intersections)
@@ -85,12 +85,12 @@ def test_axis_intersections_cells(NAA):
     i, j = np.unravel_index(k, (5, 5))
 
     axis = 0  # hoizontal axis
-    _, h_cells = NAA.axis_intersections(axis, k)
+    _, h_cells = NAA.axis_intersections(axis, vk)
     true_h_cells = np.arange(i * 5, (i + 1) * 5)
     assert np.sort(h_cells) == pytest.approx(true_h_cells)
 
     axis = 1  # vertical axis
-    _, v_cells = NAA.axis_intersections(axis, k)
+    _, v_cells = NAA.axis_intersections(axis, vk)
     true_v_cells = np.arange(j, 25, 5)
     assert np.sort(v_cells) == pytest.approx(true_v_cells)
 

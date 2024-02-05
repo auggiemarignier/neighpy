@@ -90,7 +90,9 @@ class NAAppariser:
                 accepted = True
                 return xpi
 
-    def axis_intersections(self, axis: int, k: int) -> tuple[ArrayLike, ArrayLike]:
+    def axis_intersections(
+        self, axis: int, xA: ArrayLike
+    ) -> tuple[ArrayLike, ArrayLike]:
         """
         Calculate the intersections of an axis passing through point vk in the kth cell
         with the boundaries of all cells
@@ -98,55 +100,57 @@ class NAAppariser:
         Returns the intersection points and the cells the axis passes through
         """
 
-        down_intersections, down_cells = self._travel_along_axis(axis, k, down=True)
+        # The perpendicular distance to the axis from the current point in the walk
+        # is constant as we traverse along the axis, so calculate before recursion
+        d = (
+            xA - self.initial_ensemble
+        ) ** 2  # component-wise squared distance to all other cells
+        d2 = np.sum(d * self.Cm, axis=1)  # total scaled distance to all other cells
+        k = np.argmin(d2)  # index of the nearest cell
+        dk2 = np.sum(
+            np.delete(d, axis, 1) * np.delete(self.Cm, axis), axis=1
+        )  # perpendicular distance to axis
+
+        # Travel down the axis
+        down_intersections, down_cells = self._get_axis_intersections(
+            axis, k, dk2, down=True
+        )
         # reverse the order of the down intersections and cells
         # so that the order of the intersections is from lowest to highest
         down_intersections = down_intersections[::-1]
         down_cells = down_cells[::-1]
 
-        up_intersections, up_cells = self._travel_along_axis(axis, k, up=True)
+        # Travel up the axis
+        up_intersections, up_cells = self._get_axis_intersections(axis, k, dk2, up=True)
 
         return np.array(down_intersections + up_intersections), np.array(
             down_cells + [k] + up_cells
         )
 
-    def _travel_along_axis(
-        self, axis: int, k: int, down: bool = False, up: bool = False
-    ) -> list:
-        intersections = []
-        cells_traversed = []
-        next_cell = k
-        bound_reached = False
-        while not bound_reached:
-            _next_cell, intersection, bound_reached = self._get_axis_intersection(
-                axis, next_cell, down=down, up=up
-            )
-            if intersection is not None and _next_cell is not None:
-                intersections.append(intersection)
-                cells_traversed.append(_next_cell)
-                next_cell = _next_cell
-            else:
-                break
-        return intersections, cells_traversed
-
-    def _get_axis_intersection(
-        self, axis: int, k: int, down: bool = False, up: bool = False
+    def _get_axis_intersections(
+        self, axis: int, k: int, di2: ArrayLike, down: bool = False, up: bool = False
     ):
         """
-        Returns the index of the next cell along the axis that shares a boundary with the kth cell,
-        the intersection point, and whether the bound is reached.
+        axis: int - the axis to travel along
+        k: int - the index of the current cell
+        di2: ArrayLike - the perpendicular distance to the axis from current point in walk
+        down: bool - whether to travel down the axis
+        up: bool - whether to travel up the axis
+
+        Returns:
+            intersections: ArrayLike - the intersection points
+            cells: ArrayLike - the cells the axis passes through
         """
         assert not (down and up)
+
+        intersections = []
+        cells = []
 
         # eqn (19) Sambridge 1999
         vk = self.initial_ensemble[k]
         vki = vk[axis]
         vji = self.initial_ensemble[:, axis]
-        d2i = (
-            np.sum(self.Cm * (vk - self.initial_ensemble) ** 2, axis=1)
-            - self.Cm[axis] * (vki - vji) ** 2
-        )  # perpendicular distance to current axis
-        a = d2i[k] - d2i
+        a = di2[k] - di2
         b = self.Cm[axis] * (vki - vji)
         with warnings.catch_warnings(action="ignore"):
             xji = 0.5 * (vki + vji + a / b)
@@ -162,9 +166,15 @@ class NAAppariser:
         xji = np.ma.array(xji, mask=mask)
         if xji.count() > 0:  # valid intersections found
             k_new = closest(xji)  # closest to vk
-            return k_new, xji[k_new], False
-        else:
-            return None, None, True
+            intersections += [xji[k_new]]
+            cells += [k_new]
+
+            new_intersections, new_cells = self._get_axis_intersections(
+                axis, k_new, di2, down, up
+            )
+            return intersections + new_intersections, cells + new_cells
+
+        return intersections, cells
 
     def _identify_cell(
         self, xp: float, intersections: ArrayLike, cells: ArrayLike
