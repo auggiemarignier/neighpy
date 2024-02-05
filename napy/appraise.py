@@ -51,7 +51,7 @@ class NAAppariser:
 
         # combine the results
         for j, j_results in enumerate(results):
-            j_mean, j_cov_crossterm = j_results[:-1]
+            j_mean, j_cov_crossterm = j_results[:-1] if save else j_results
 
             mean += j_mean / self.nr
             cov_crossterm += j_cov_crossterm / self.nr
