@@ -18,6 +18,11 @@ pre-commit = "^3.6.0"
 matplotlib = "^3.8.2"
 shapely = "^2.0.2"
 
+
+[tool.poetry.group.examples.dependencies]
+jupyter = "^1.0.0"
+matplotlib = "^3.8.2"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
