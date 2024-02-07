@@ -14,7 +14,6 @@ class MCIntegrals:
         self.mi2 = np.zeros(nd)
         self.mimj = np.zeros((nd, nd))
         self.mi2mj = np.zeros((nd, nd))
-        self.mimj2 = np.zeros((nd, nd))
         self.mi2mj2 = np.zeros((nd, nd))
         self.N = 0
         self.samples = [] if save_samples else None
@@ -32,7 +31,6 @@ class MCIntegrals:
         self.mi2 += x**2
         self.mimj += np.outer(x, x)
         self.mi2mj += np.outer(x**2, x)
-        self.mimj2 += np.outer(x, x**2)
         self.mi2mj2 += np.outer(x**2, x**2)
         self.N += 1
         if self.samples is not None:
@@ -43,7 +41,6 @@ class MCIntegrals:
         self.mi2 += x.mi2
         self.mimj += x.mimj
         self.mi2mj += x.mi2mj
-        self.mimj2 += x.mimj2
         self.mi2mj2 += x.mi2mj2
         self.N += x.N
         if self.samples is not None and x.samples is not None:
@@ -52,6 +49,33 @@ class MCIntegrals:
     def mean(self):
         return self.mi / self.N
 
+    def sample_mean_error(self):
+        mi = self.mi / self.N
+        mi2 = self.mi2 / self.N
+        return np.sqrt((mi2 - mi**2) / self.N)
+
     def covariance(self):
-        mean = self.mean()
-        return self.mimj / self.N - np.outer(mean, mean)
+        mi = self.mi / self.N
+        mimj = self.mimj / self.N
+        return mimj - np.outer(mi, mi)
+
+    def sample_covariance_error(self):
+        mi = self.mi / self.N
+        mi2 = self.mi2 / self.N
+        mimj = self.mimj / self.N
+        mi2mj = self.mi2mj / self.N
+        mi2mj2 = self.mi2mj2 / self.N
+
+        return np.sqrt(
+            (
+                mi2mj2
+                + np.outer(mi2, mi**2)
+                + np.outer(mi**2, mi2)
+                - 2 * mi2mj * mi[np.newaxis, :]
+                - 2 * mi2mj * mi[:, np.newaxis]
+                - 4 * np.outer(mi**2, mi**2)
+                + 6 * mimj * np.outer(mi, mi)
+                - mimj**2
+            )
+            / self.N
+        )
