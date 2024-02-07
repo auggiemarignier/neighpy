@@ -140,6 +140,9 @@ class NASearcher:
         self.np += n
 
     def _check_objective(self):
+        """
+        Choose the fastest way to apply the objective function to a set of samples.
+        """
         # check if the objective function is vectorised
         samples = np.random.randn(self.ns, self.nd)
         if ~np.array_equal(
@@ -171,12 +174,23 @@ class NASearcher:
         self.np = 0  # this is here just to be sure
 
     def _apply_objective_along_axis(self, new_samples: ArrayLike):
+        """
+        For if the objective function is not vectorised
+            e.g. np.sum(x) where x is a 2D array of samples
+        """
         return np.apply_along_axis(self.objective, 1, new_samples)
 
     def _apply_objective_vectorised(self, new_samples: ArrayLike):
+        """
+        For if the objective function is vectorised
+            e.g. np.sum(x, axis=1) where x is a 2D array of samples
+        """
         return self.objective(new_samples)
 
     def _apply_objective_parallel(self, new_samples: ArrayLike):
+        """
+        For speed!  Simple testing showed that if t(objective) > 0.006s then parallel is faster
+        """
         return Parallel(n_jobs=new_samples.shape[0])(
             delayed(self.objective)(x) for x in new_samples
         )
