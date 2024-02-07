@@ -75,3 +75,19 @@ def test_sample_mean_error(accumulator, samples):
     cov = np.cov(samples, rowvar=False, bias=True)
     var = np.diag(cov)
     assert np.allclose(accumulator.sample_mean_error(), np.sqrt(var / accumulator.N))
+
+
+def test_sample_covariance_error(accumulator, samples):
+    # For the diagonal terms of the covariance matrix, the sample covariance error is
+    # related to the 4th central moment, similar to how the sample mean error is related
+    # to the 2nd central moment.
+    #
+    #   eps_ii = (1/sqrt(N)) * sqrt(4th central moment - variance^2)
+    #
+    from scipy.stats import moment
+
+    var = np.diag(np.cov(samples, rowvar=False, bias=True))
+    var2 = var**2
+    fourth_moment = moment(samples, moment=4, axis=0)
+    eps_ii = np.sqrt(fourth_moment - var2) / np.sqrt(accumulator.N)
+    assert np.allclose(np.diag(accumulator.sample_covariance_error()), eps_ii)
