@@ -3,6 +3,8 @@ from numpy.typing import ArrayLike
 import warnings
 from joblib import Parallel, delayed
 
+from ._mcintegrals import MCIntegrals
+
 
 class NAAppariser:
     def __init__(
@@ -33,61 +35,39 @@ class NAAppariser:
         Calculates a few basic MC integrals
         """
 
-        if save:
-            samples = np.zeros((self.j, self.nr, self.nd))
-        mean = np.zeros(self.nd)
-        cov_crossterm = np.zeros((self.nd, self.nd))
-
         with Parallel(n_jobs=self.j) as parallel:
             # select start points for the random walks
             # ensure that at least one walker starts at the best cell
             start_points = np.random.choice(self.Ne, self.j, replace=False)
             start_points[0] = np.argmin(self.objectives)
 
-            # run the walkers in parallel
-            results = parallel(
-                delayed(self._appraise)(save, start) for start in start_points
-            )
+            # create a MCIntegrals object for each walker
+            accumulators = [MCIntegrals(self.nd, save) for _ in range(self.j)]
+
+            # # run the walkers in parallel
+            # parallel(
+            #     delayed(self._appraise)(acc, start)
+            #     for start, acc in zip(start_points, accumulators)
+            # )
+            for acc, start in zip(accumulators, start_points):
+                self._appraise(acc, start)
 
         # combine the results
-        for j, j_results in enumerate(results):
-            j_mean, j_cov_crossterm = j_results[:-1] if save else j_results
-
-            mean += j_mean / self.nr
-            cov_crossterm += j_cov_crossterm / self.nr
-            if save:
-                j_samples = j_results[-1]
-                samples[j] = j_samples
-
-        mean /= self.j
-        covariance = cov_crossterm / self.j - np.outer(mean, mean)
+        accumulator = MCIntegrals(self.nd, save)
+        for acc in accumulators:
+            accumulator.accumulate(acc)
 
         results = {
-            "mean": mean,
-            "covariance": covariance,
+            "mean": accumulator.mean(),
+            "covariance": accumulator.covariance(),
         }
-        if save:
-            results["samples"] = samples.reshape(-1, self.nd)
+        if save and accumulator.samples is not None:
+            results["samples"] = np.stack(accumulator.samples)
         return results
 
-    def _appraise(self, save: bool = False, start_k: int = 0):
-        if save:
-            j_samples = np.zeros((self.nr, self.nd))
-            _i = 0
-        j_mean = np.zeros(self.nd)
-        j_cov_crossterm = np.zeros((self.nd, self.nd))
-
+    def _appraise(self, accumulator: MCIntegrals, start_k: int = 0):
         for x in self.random_walk_through_parameter_space(start_k):
-            j_mean += NAAppariser.g_mean(x)
-            j_cov_crossterm += NAAppariser.g_covariance_cross(x)
-            if save:
-                j_samples[_i] = x.copy()
-                _i += 1
-
-        results = (j_mean, j_cov_crossterm)
-        if save:
-            results += (j_samples,)
-        return results
+            accumulator.accumulate(x)
 
     def random_walk_through_parameter_space(self, start_k: int = 0):
         """
@@ -224,34 +204,3 @@ class NAAppariser:
     @staticmethod
     def g_covariance_cross(x):
         return np.outer(x, x)
-
-
-class MCIntegrals:
-    """
-    Class for accumulating samples to calculate MC integrals in a single loop
-    """
-
-    def __init__(self, nd: int):
-        self.mi = np.zeros(nd)
-        self.mi2 = np.zeros(nd)
-        self.mimj = np.zeros((nd, nd))
-        self.mi2mj = np.zeros((nd, nd))
-        self.mimj2 = np.zeros((nd, nd))
-        self.mi2mj2 = np.zeros((nd, nd))
-        self.N = 0
-
-    def accumulate(self, x: ArrayLike):
-        self.mi += x
-        self.mi2 += x**2
-        self.mimj += np.outer(x, x)
-        self.mi2mj += np.outer(x**2, x)
-        self.mimj2 += np.outer(x, x**2)
-        self.mi2mj2 += np.outer(x**2, x**2)
-        self.N += 1
-
-    def mean(self):
-        return self.mi / self.N
-
-    def covariance(self):
-        mean = self.mean()
-        return self.mimj / self.N - np.outer(mean, mean)
