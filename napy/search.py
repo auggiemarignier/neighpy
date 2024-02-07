@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.typing import ArrayLike
 from typing import Callable
+from joblib import Parallel, delayed
 
 
 class NASearcher:
@@ -65,9 +66,11 @@ class NASearcher:
             self._current_best_ind = inds[0]
             cells_to_resample = self.samples[inds]
 
-            for k, cell in zip(inds, cells_to_resample):
-                new_samples = self._random_walk_in_voronoi(cell, k)
-                self._update_ensemble(new_samples)
+            new_samples = Parallel(n_jobs=self.nr)(
+                delayed(self._random_walk_in_voronoi)(cell, k)
+                for k, cell in zip(inds, cells_to_resample)
+            )
+            self._update_ensemble(np.concatenate(new_samples))
 
     def _initial_random_search(self) -> ArrayLike:
         return np.random.uniform(
