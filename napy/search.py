@@ -137,3 +137,11 @@ class NASearcher:
             self.objective, 1, new_samples
         )
         self.np += n
+
+    def _update_ensemble_parallel(self, new_samples: ArrayLike):
+        n = new_samples.shape[0]
+        self.samples[self.np : self.np + n] = new_samples
+        self.objectives[self.np : self.np + n] = Parallel(n_jobs=n)(
+            delayed(self.objective)(x) for x in new_samples
+        )
+        self.np += n

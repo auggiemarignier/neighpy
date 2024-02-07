@@ -5,11 +5,13 @@ from scipy.spatial import Voronoi
 from shapely.geometry import LineString, Point
 from shapely.ops import polygonize
 import matplotlib.pyplot as plt
+from time import sleep
 
 from napy import NASearcher
 
 
 def objective(x: ArrayLike) -> float:
+    sleep(0.006)
     return -np.sum(x)
 
 
@@ -117,3 +119,25 @@ def test_run(NAS):
     assert np.all(NAS.samples >= NAS.lower)
     assert np.all(NAS.samples <= NAS.upper)
     assert NAS.np == NAS.nt
+
+
+def test_update_ensemble_speed(NAS):
+    from time import time
+
+    times_ = []
+    for _ in range(100):
+        new_samples = NAS._initial_random_search()
+        t0 = time()
+        NAS._update_ensemble(new_samples)
+        times_.append(time() - t0)
+        NAS.np = 0
+
+    times_2 = []
+    for _ in range(100):
+        new_samples = NAS._initial_random_search()
+        t0 = time()
+        NAS._update_ensemble_parallel(new_samples)
+        times_2.append(time() - t0)
+        NAS.np = 0
+
+    assert np.mean(times_) > np.mean(times_2)
