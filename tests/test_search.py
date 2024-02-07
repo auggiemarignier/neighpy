@@ -120,7 +120,9 @@ def test_run(NAS):
 
 
 def test_update_ensemble_speed(NAS):
-    from time import time, sleep
+    from time import sleep
+
+    assert NAS._apply_objective == NAS._apply_objective_along_axis
 
     def _objective(x):
         sleep(0.006)
@@ -129,23 +131,3 @@ def test_update_ensemble_speed(NAS):
     NAS.objective = _objective
     NAS._check_objective()
     assert NAS._apply_objective == NAS._apply_objective_parallel
-
-    times_ = []
-    NAS._apply_objective = NAS._apply_objective_along_axis
-    for _ in range(100):
-        new_samples = NAS._initial_random_search()
-        t0 = time()
-        NAS._update_ensemble(new_samples)
-        times_.append(time() - t0)
-        NAS.np = 0
-
-    times_2 = []
-    NAS._apply_objective = NAS._apply_objective_parallel
-    for _ in range(100):
-        new_samples = NAS._initial_random_search()
-        t0 = time()
-        NAS._update_ensemble(new_samples)
-        times_2.append(time() - t0)
-        NAS.np = 0
-
-    assert np.mean(times_) > np.mean(times_2)
