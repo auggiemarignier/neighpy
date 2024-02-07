@@ -44,13 +44,11 @@ class NAAppariser:
             # create a MCIntegrals object for each walker
             accumulators = [MCIntegrals(self.nd, save) for _ in range(self.j)]
 
-            # # run the walkers in parallel
-            # parallel(
-            #     delayed(self._appraise)(acc, start)
-            #     for start, acc in zip(start_points, accumulators)
-            # )
-            for acc, start in zip(accumulators, start_points):
-                self._appraise(acc, start)
+            # run the walkers in parallel
+            accumulators = parallel(
+                delayed(self._appraise)(acc, start)
+                for start, acc in zip(start_points, accumulators)
+            )
 
         # combine the results
         accumulator = MCIntegrals(self.nd, save)
@@ -68,6 +66,7 @@ class NAAppariser:
     def _appraise(self, accumulator: MCIntegrals, start_k: int = 0):
         for x in self.random_walk_through_parameter_space(start_k):
             accumulator.accumulate(x)
+        return accumulator
 
     def random_walk_through_parameter_space(self, start_k: int = 0):
         """
