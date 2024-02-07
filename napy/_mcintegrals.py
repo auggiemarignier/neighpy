@@ -72,7 +72,7 @@ class MCIntegrals:
                 + np.outer(mi2, mi**2)
                 + np.outer(mi**2, mi2)
                 - 2 * mi2mj * mi[np.newaxis, :]
-                - 2 * mi2mj * mi[:, np.newaxis]
+                - 2 * mi[:, np.newaxis] * mi2mj.T
                 - 4 * np.outer(mi**2, mi**2)
                 + 6 * mimj * np.outer(mi, mi)
                 - mimj**2
