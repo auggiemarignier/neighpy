@@ -9,7 +9,7 @@ class MCIntegrals:
     Class for accumulating samples to calculate MC integrals in a single loop
     """
 
-    def __init__(self, nd: int, save_sammples: bool = False):
+    def __init__(self, nd: int, save_samples: bool = False):
         self.mi = np.zeros(nd)
         self.mi2 = np.zeros(nd)
         self.mimj = np.zeros((nd, nd))
@@ -17,7 +17,7 @@ class MCIntegrals:
         self.mimj2 = np.zeros((nd, nd))
         self.mi2mj2 = np.zeros((nd, nd))
         self.N = 0
-        self.samples = [] if save_sammples else None
+        self.samples = [] if save_samples else None
 
     def accumulate(self, x: Union[ArrayLike, MCIntegrals]):
         if isinstance(x, np.ndarray):
@@ -36,7 +36,7 @@ class MCIntegrals:
         self.mi2mj2 += np.outer(x**2, x**2)
         self.N += 1
         if self.samples is not None:
-            self.samples.append(x)
+            self.samples.append(x.copy())
 
     def _accumulate_mcintegrals(self, x: MCIntegrals):
         self.mi += x.mi
@@ -47,7 +47,7 @@ class MCIntegrals:
         self.mi2mj2 += x.mi2mj2
         self.N += x.N
         if self.samples is not None and x.samples is not None:
-            self.samples.extend(x.samples)
+            self.samples.extend(x.samples.copy())
 
     def mean(self):
         return self.mi / self.N
