@@ -30,7 +30,7 @@ def test_accumulate(MCIntegrals_obj):
     assert np.allclose(MCIntegrals_obj.mi2, x**2)
     assert np.allclose(MCIntegrals_obj.mimj, np.outer(x, x))
     assert np.allclose(MCIntegrals_obj.mi2mj, np.outer(x**2, x))
-    assert np.allclose(MCIntegrals_obj.mimj2, np.outer(x, x**2))
+    assert np.allclose(MCIntegrals_obj.mi2mj.T, np.outer(x, x**2))
     assert np.allclose(MCIntegrals_obj.mi2mj2, np.outer(x**2, x**2))
 
     x = np.array([3.0, 4.0])
@@ -40,7 +40,7 @@ def test_accumulate(MCIntegrals_obj):
     assert np.allclose(MCIntegrals_obj.mi2, [10.0, 20.0])
     assert np.allclose(MCIntegrals_obj.mimj, [[10.0, 14.0], [14.0, 20.0]])
     assert np.allclose(MCIntegrals_obj.mi2mj, [[28.0, 38.0], [52.0, 72.0]])
-    assert np.allclose(MCIntegrals_obj.mimj2, [[28.0, 52.0], [38.0, 72.0]])
+    assert np.allclose(MCIntegrals_obj.mi2mj.T, [[28.0, 52.0], [38.0, 72.0]])
     assert np.allclose(MCIntegrals_obj.mi2mj2, [[82.0, 148.0], [148.0, 272.0]])
 
 
@@ -56,7 +56,7 @@ def test_accumulate_objects(MCIntegrals_obj):
     assert np.allclose(MCIntegrals_obj.mi2, [10.0, 20.0])
     assert np.allclose(MCIntegrals_obj.mimj, [[10.0, 14.0], [14.0, 20.0]])
     assert np.allclose(MCIntegrals_obj.mi2mj, [[28.0, 38.0], [52.0, 72.0]])
-    assert np.allclose(MCIntegrals_obj.mimj2, [[28.0, 52.0], [38.0, 72.0]])
+    assert np.allclose(MCIntegrals_obj.mi2mj.T, [[28.0, 52.0], [38.0, 72.0]])
     assert np.allclose(MCIntegrals_obj.mi2mj2, [[82.0, 148.0], [148.0, 272.0]])
 
 
