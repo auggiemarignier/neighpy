@@ -7,7 +7,19 @@ from napy._mcintegrals import MCIntegrals
 @pytest.fixture
 def MCIntegrals_obj():
     nd = 2
-    return MCIntegrals(nd)
+    return MCIntegrals(nd, save_samples=True)
+
+
+@pytest.fixture
+def samples():
+    return np.random.rand(10, 2)
+
+
+@pytest.fixture
+def accumulator(MCIntegrals_obj, samples):
+    for x in samples:
+        MCIntegrals_obj.accumulate(x)
+    return MCIntegrals_obj
 
 
 def test_accumulate(MCIntegrals_obj):
@@ -48,19 +60,18 @@ def test_accumulate_objects(MCIntegrals_obj):
     assert np.allclose(MCIntegrals_obj.mi2mj2, [[82.0, 148.0], [148.0, 272.0]])
 
 
-def test_mean(MCIntegrals_obj):
-    samples = np.random.rand(10, 2)
-    for x in samples:
-        MCIntegrals_obj.accumulate(x)
-
-    assert np.allclose(MCIntegrals_obj.mean(), samples.mean(axis=0))
+def test_mean(accumulator, samples):
+    assert np.allclose(accumulator.mean(), samples.mean(axis=0))
 
 
-def test_covariance(MCIntegrals_obj):
-    samples = np.random.rand(10, 2)
-    for x in samples:
-        MCIntegrals_obj.accumulate(x)
-
+def test_covariance(accumulator, samples):
     assert np.allclose(
-        MCIntegrals_obj.covariance(), np.cov(samples, rowvar=False, bias=True)
+        accumulator.covariance(), np.cov(samples, rowvar=False, bias=True)
     )
+
+
+def test_sample_mean_error(accumulator, samples):
+    # sample mean error is sigma/sqrt(N)
+    cov = np.cov(samples, rowvar=False, bias=True)
+    var = np.diag(cov)
+    assert np.allclose(accumulator.sample_mean_error(), np.sqrt(var / accumulator.N))
