@@ -2,6 +2,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 from typing import Callable
 from joblib import Parallel, delayed
+from time import time
 
 
 class NASearcher:
@@ -54,6 +55,8 @@ class NASearcher:
             self.nt, np.inf
         )  # start with inf since we want to minimize
         self._current_best_ind = 0
+
+        self._check_objective()
 
     def run(self) -> None:
         # initial random search
@@ -133,15 +136,47 @@ class NASearcher:
     def _update_ensemble(self, new_samples: ArrayLike):
         n = new_samples.shape[0]
         self.samples[self.np : self.np + n] = new_samples
-        self.objectives[self.np : self.np + n] = np.apply_along_axis(
-            self.objective, 1, new_samples
-        )
+        self.objectives[self.np : self.np + n] = self._apply_objective(new_samples)
         self.np += n
 
-    def _update_ensemble_parallel(self, new_samples: ArrayLike):
-        n = new_samples.shape[0]
-        self.samples[self.np : self.np + n] = new_samples
-        self.objectives[self.np : self.np + n] = Parallel(n_jobs=n)(
+    def _check_objective(self):
+        # check if the objective function is vectorised
+        samples = np.random.randn(self.ns, self.nd)
+        if ~np.array_equal(
+            self._apply_objective_vectorised(samples),
+            self._apply_objective_along_axis(samples),
+        ):  # not vectorised
+            self._apply_objective = self._apply_objective_along_axis
+        else:  # vectorised
+            self._apply_objective = self._apply_objective_vectorised
+
+        # check if parallel is faster
+        times_ = []
+        for _ in range(100):
+            t0 = time()
+            self._apply_objective(samples)
+            times_.append(time() - t0)
+            self.np = 0
+
+        times_2 = []
+        for _ in range(100):
+            t0 = time()
+            self._apply_objective_parallel(samples)
+            times_2.append(time() - t0)
+            self.np = 0
+
+        if np.mean(times_) > np.mean(times_2):
+            self._apply_objective = self._apply_objective_parallel
+
+        self.np = 0  # this is here just to be sure
+
+    def _apply_objective_along_axis(self, new_samples: ArrayLike):
+        return np.apply_along_axis(self.objective, 1, new_samples)
+
+    def _apply_objective_vectorised(self, new_samples: ArrayLike):
+        return self.objective(new_samples)
+
+    def _apply_objective_parallel(self, new_samples: ArrayLike):
+        return Parallel(n_jobs=new_samples.shape[0])(
             delayed(self.objective)(x) for x in new_samples
         )
-        self.np += n
