@@ -58,7 +58,9 @@ class NAAppariser:
 
         results = {
             "mean": accumulator.mean(),
+            "sample_mean_error": accumulator.sample_mean_error(),
             "covariance": accumulator.covariance(),
+            "sample_covariance_error": accumulator.sample_covariance_error(),
         }
         if save and accumulator.samples is not None:
             results["samples"] = np.stack(accumulator.samples)

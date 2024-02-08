@@ -126,7 +126,9 @@ def test__identify_cell(NAA, true_cell):
 def test_appraise(NAA):
     results = NAA.appraise()
     assert results["mean"].shape == (2,)
+    assert results["sample_mean_error"].shape == (2,)
     assert results["covariance"].shape == (2, 2)
+    assert results["sample_covariance_error"].shape == (2, 2)
 
 
 def test_MC_integrals(NAA):
