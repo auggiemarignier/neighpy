@@ -1,5 +1,5 @@
 import numpy as np
-from numpy.typing import ArrayLike
+from numpy.typing import NDArray
 import pytest
 from scipy.spatial import Voronoi
 from shapely.geometry import LineString, Point
@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from napy import NASearcher
 
 
-def objective(x: ArrayLike) -> float:
+def objective(x: NDArray) -> float:
     return -np.sum(x)
 
 

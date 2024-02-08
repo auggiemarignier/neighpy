@@ -1,5 +1,5 @@
 import numpy as np
-from numpy.typing import ArrayLike
+from numpy.typing import NDArray
 import warnings
 from joblib import Parallel, delayed
 from tqdm import tqdm
@@ -10,8 +10,8 @@ from ._mcintegrals import MCIntegrals
 class NAAppariser:
     def __init__(
         self,
-        initial_ensemble: ArrayLike,
-        objectives: ArrayLike,
+        initial_ensemble: NDArray,
+        objectives: NDArray,
         bounds: tuple[tuple[float, float], ...],
         n_resample: int,
         n_walkers: int = 1,
@@ -84,9 +84,7 @@ class NAAppariser:
                 xA[i] = xpi
             yield xA
 
-    def axis_intersections(
-        self, axis: int, xA: ArrayLike
-    ) -> tuple[ArrayLike, ArrayLike]:
+    def axis_intersections(self, axis: int, xA: NDArray) -> tuple[NDArray, NDArray]:
         """
         Calculate the intersections of an axis passing through point vk in the kth cell
         with the boundaries of all cells
@@ -136,18 +134,18 @@ class NAAppariser:
                 return xpi
 
     def _get_axis_intersections(
-        self, axis: int, k: int, di2: ArrayLike, down: bool = False, up: bool = False
+        self, axis: int, k: int, di2: NDArray, down: bool = False, up: bool = False
     ):
         """
         axis: int - the axis to travel along
         k: int - the index of the current cell
-        di2: ArrayLike - the perpendicular distance to the axis from current point in walk
+        di2: NDArray - the perpendicular distance to the axis from current point in walk
         down: bool - whether to travel down the axis
         up: bool - whether to travel up the axis
 
         Returns:
-            intersections: ArrayLike - the intersection points
-            cells: ArrayLike - the cells the axis passes through
+            intersections: NDArray - the intersection points
+            cells: NDArray - the cells the axis passes through
         """
         assert not (down and up)
 
@@ -184,9 +182,7 @@ class NAAppariser:
 
         return intersections, cells
 
-    def _identify_cell(
-        self, xp: float, intersections: ArrayLike, cells: ArrayLike
-    ) -> int:
+    def _identify_cell(self, xp: float, intersections: NDArray, cells: NDArray) -> int:
         """
         Given a set of intersections and the cells they pass through,
         identify the cell that contains the point xp.

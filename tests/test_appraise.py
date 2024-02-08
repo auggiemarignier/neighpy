@@ -1,12 +1,12 @@
 import numpy as np
-from numpy.typing import ArrayLike
+from numpy.typing import NDArray
 import pytest
 import matplotlib.pyplot as plt
 
 from napy import NAAppariser
 
 
-def objective(x: ArrayLike) -> float:
+def objective(x: NDArray) -> float:
     return np.exp(-np.sum(x))
 
 

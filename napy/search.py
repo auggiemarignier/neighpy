@@ -1,5 +1,5 @@
 import numpy as np
-from numpy.typing import ArrayLike
+from numpy.typing import NDArray
 from typing import Callable
 from joblib import Parallel, delayed
 from tqdm import tqdm
@@ -8,7 +8,7 @@ from tqdm import tqdm
 class NASearcher:
     def __init__(
         self,
-        objective: Callable[[ArrayLike], float],
+        objective: Callable[[NDArray], float],
         ns: int,
         nr: int,
         ni: int,
@@ -19,8 +19,8 @@ class NASearcher:
         Initialize a new instance of the NASearcher class.
 
         Args:
-            objective (Callable[[ArrayLike], float]): The objective function to minimize.
-                This function should take a single argument of type ArrayLike and return a float.
+            objective (Callable[[NDArray], float]): The objective function to minimize.
+                This function should take a single argument of type NDArray and return a float.
             ns (int): The number of samples generated at each iteration.
             nr (int): The number of cells to resample.
             ni (int): The number of samples from initial random search.
@@ -74,14 +74,14 @@ class NASearcher:
             )
             self._update_ensemble(np.concatenate(new_samples))
 
-    def _initial_random_search(self) -> ArrayLike:
+    def _initial_random_search(self) -> NDArray:
         return np.random.uniform(
             low=self.lower,
             high=self.upper,
             size=(self.ni, self.nd),
         )
 
-    def _random_walk_in_voronoi(self, vk: ArrayLike, k: int) -> ArrayLike:
+    def _random_walk_in_voronoi(self, vk: NDArray, k: int) -> NDArray:
         # FOLLOWING https://github.com/underworldcode/pyNA/blob/30d1cb7955d6b1389eae885127389ed993fa6940/pyNA/sampler.py#L85
 
         # vk is the current voronoi cell
@@ -128,11 +128,11 @@ class NASearcher:
 
         return new_samples
 
-    def _get_best_indices(self) -> ArrayLike:
+    def _get_best_indices(self) -> NDArray:
         # there may be a faster way to do this using np.argpartition
         return np.argsort(self.objectives)[: self.nr]
 
-    def _update_ensemble(self, new_samples: ArrayLike):
+    def _update_ensemble(self, new_samples: NDArray):
         n = new_samples.shape[0]
         self.samples[self.np : self.np + n] = new_samples
         self.objectives[self.np : self.np + n] = np.apply_along_axis(

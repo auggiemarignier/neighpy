@@ -1,7 +1,6 @@
 from __future__ import annotations  # needed for type hint of self in accumulate
 import numpy as np
-from numpy.typing import ArrayLike
-from typing import Union
+from numpy.typing import NDArray
 
 
 class MCIntegrals:
@@ -16,9 +15,9 @@ class MCIntegrals:
         self.mi2mj = np.zeros((nd, nd))
         self.mi2mj2 = np.zeros((nd, nd))
         self.N = 0
-        self.samples = [] if save_samples else None
+        self.samples: list | None = [] if save_samples else None
 
-    def accumulate(self, x: Union[ArrayLike, MCIntegrals]):
+    def accumulate(self, x: NDArray | MCIntegrals):
         if isinstance(x, np.ndarray):
             # usual case
             self._accumulate_arraylike(x)
@@ -26,7 +25,7 @@ class MCIntegrals:
             # e.g. accumulating multiple parallel walkers each with their own accumulator
             self._accumulate_mcintegrals(x)
 
-    def _accumulate_arraylike(self, x: ArrayLike):
+    def _accumulate_arraylike(self, x: NDArray):
         self.mi += x
         self.mi2 += x**2
         self.mimj += np.outer(x, x)
