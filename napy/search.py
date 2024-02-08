@@ -58,6 +58,7 @@ class NASearcher:
 
     def run(self) -> None:
         # initial random search
+        print("NAI - Initial Random Search")
         new_samples = self._initial_random_search()
         self._update_ensemble(new_samples)
 
