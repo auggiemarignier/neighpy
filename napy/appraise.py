@@ -198,11 +198,3 @@ class NAAppariser:
             else closest_intersection + 1
         )
         return cells[cell_id]
-
-    @staticmethod
-    def g_mean(x):
-        return x
-
-    @staticmethod
-    def g_covariance_cross(x):
-        return np.outer(x, x)
