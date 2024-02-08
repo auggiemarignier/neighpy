@@ -74,7 +74,7 @@ class NAAppariser:
         Perform the random walk through parameter space.
         Yields a new sample at each iteration to be used for calculating summary statistics.
         """
-        xA = self.initial_ensemble[start_k].copy()  # This will change at some point
+        xA = self.initial_ensemble[start_k].copy()
         for _ in tqdm(range(self.nr), desc="NAII - Random Walk"):
             for i in range(self.nd):
                 intersections, cells = self.axis_intersections(i, xA)
