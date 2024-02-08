@@ -142,17 +142,20 @@ class NASearcher:
 
     def _check_objective(self):
         """
-        Choose the fastest way to apply the objective function to a set of samples.
+        Choose the fastest way to apply the objective function to a batch of samples.
         """
         # check if the objective function is vectorised
         samples = np.random.randn(self.ns, self.nd)
-        if ~np.array_equal(
-            self._apply_objective_vectorised(samples),
-            self._apply_objective_along_axis(samples),
-        ):  # not vectorised
+        try:
+            _vec = self._apply_objective_vectorised(samples)
+        except Exception:  # vectorisation failed somehow
+            _vec = None
             self._apply_objective = self._apply_objective_along_axis
-        else:  # vectorised
-            self._apply_objective = self._apply_objective_vectorised
+        else:  # vectorisation ran without error
+            if np.array_equal(_vec, self._apply_objective_along_axis(samples)):
+                self._apply_objective = self._apply_objective_vectorised
+            else:  # vectorisation failed somehow (e.g. cumulated along wrong axis)
+                self._apply_objective = self._apply_objective_along_axis
 
         # check if parallel is faster
         times_ = []
