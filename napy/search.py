@@ -3,6 +3,7 @@ from numpy.typing import ArrayLike
 from typing import Callable
 from joblib import Parallel, delayed
 from time import time
+from tqdm import tqdm
 
 
 class NASearcher:
@@ -64,7 +65,7 @@ class NASearcher:
         self._update_ensemble(new_samples)
 
         # main optimisation loop
-        for _ in range(self.n):
+        for _ in tqdm(range(self.n), desc="NAI - Optimisation Loop"):
             inds = self._get_best_indices()
             self._current_best_ind = inds[0]
             cells_to_resample = self.samples[inds]

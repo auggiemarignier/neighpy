@@ -2,6 +2,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 import warnings
 from joblib import Parallel, delayed
+from tqdm import tqdm
 
 from ._mcintegrals import MCIntegrals
 
@@ -74,7 +75,7 @@ class NAAppariser:
         Yields a new sample at each iteration to be used for calculating summary statistics.
         """
         xA = self.initial_ensemble[start_k].copy()  # This will change at some point
-        for _ in range(self.nr):
+        for _ in tqdm(range(self.nr), desc="NAII - Random Walk"):
             for i in range(self.nd):
                 intersections, cells = self.axis_intersections(i, xA)
                 xpi = self.random_step(i, intersections, cells)
