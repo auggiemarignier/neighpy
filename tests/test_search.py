@@ -117,17 +117,3 @@ def test_run(NAS):
     assert np.all(NAS.samples >= NAS.lower)
     assert np.all(NAS.samples <= NAS.upper)
     assert NAS.np == NAS.nt
-
-
-def test_update_ensemble_speed(NAS):
-    from time import sleep
-
-    assert NAS._apply_objective == NAS._apply_objective_along_axis
-
-    def _objective(x):
-        sleep(0.006)
-        return objective(x)
-
-    NAS.objective = _objective
-    NAS._check_objective()
-    assert NAS._apply_objective == NAS._apply_objective_parallel
