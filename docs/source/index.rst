@@ -13,12 +13,14 @@ This implementation hopes to replace the original Fortran code with a more moder
 It is a very simple implementation, with just two classes to implement the two phases of the algorithm: the :py:class:`~napy.search.NASearcher` class for the optimisation phase, and the :py:class:`~napy.appraise.NAAppraisal` class for the appraisal phase.
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
     :caption: Contents
 
     getstarted
     api
     examples
+    contributing
+    license
 
 
 Indices and tables
