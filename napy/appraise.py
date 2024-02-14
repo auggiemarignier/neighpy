@@ -38,7 +38,7 @@ class NAAppariser:
         self.j = n_walkers if n_walkers >= 1 else 1
         self.nr = self.Nr // self.j
 
-    def appraise(self, save: bool = True):
+    def run(self, save: bool = True) -> None:
         """
         Perform the appraisal stage of the Neighbourhood Algorithm.
         Calculates a few basic MC integrals (mean, covariance and their errors).
@@ -67,15 +67,14 @@ class NAAppariser:
         for acc in accumulators:
             accumulator.accumulate(acc)
 
-        results = {
+        self.results = {
             "mean": accumulator.mean(),
             "sample_mean_error": accumulator.sample_mean_error(),
             "covariance": accumulator.covariance(),
             "sample_covariance_error": accumulator.sample_covariance_error(),
         }
         if save and accumulator.samples is not None:
-            results["samples"] = np.stack(accumulator.samples)
-        return results
+            self.results["samples"] = np.stack(accumulator.samples)
 
     def _appraise(self, accumulator: MCIntegrals, start_k: int = 0):
         for x in self._random_walk_through_parameter_space(start_k):

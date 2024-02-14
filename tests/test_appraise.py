@@ -123,19 +123,19 @@ def test__identify_cell(NAA, true_cell):
     assert cell == true_cell
 
 
-def test_appraise(NAA):
-    results = NAA.appraise()
-    assert results["mean"].shape == (2,)
-    assert results["sample_mean_error"].shape == (2,)
-    assert results["covariance"].shape == (2, 2)
-    assert results["sample_covariance_error"].shape == (2, 2)
+def test_run(NAA):
+    NAA.run()
+    assert NAA.results["mean"].shape == (2,)
+    assert NAA.results["sample_mean_error"].shape == (2,)
+    assert NAA.results["covariance"].shape == (2, 2)
+    assert NAA.results["sample_covariance_error"].shape == (2, 2)
 
 
 def test_MC_integrals(NAA):
-    results = NAA.appraise(save=True)
-    mean = np.mean(results["samples"], axis=0)
-    covariance = np.cov(results["samples"], rowvar=False, bias=True)
+    NAA.run(save=True)
+    mean = np.mean(NAA.results["samples"], axis=0)
+    covariance = np.cov(NAA.results["samples"], rowvar=False, bias=True)
 
-    assert results["mean"] == pytest.approx(mean)
-    assert results["covariance"] == pytest.approx(covariance)
-    assert results["samples"].shape == (NAA.nr * NAA.j, 2)
+    assert NAA.results["mean"] == pytest.approx(mean)
+    assert NAA.results["covariance"] == pytest.approx(covariance)
+    assert NAA.results["samples"].shape == (NAA.nr * NAA.j, 2)
