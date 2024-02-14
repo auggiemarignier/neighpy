@@ -6,6 +6,11 @@ from tqdm import tqdm
 
 
 class NASearcher:
+    """
+    Direct Search phase of the Neighbourhood Algorithm as in Sambridge 1999(I).
+    The Direct Search phase generates an approximation of the objective surface, finding models of acceptable data fit in a multidimensional parameter space in a derivative-free manner.
+    """
+
     def __init__(
         self,
         objective: Callable[[NDArray], float],
@@ -57,6 +62,9 @@ class NASearcher:
         self._current_best_ind = 0
 
     def run(self) -> None:
+        """
+        Run the Direct Search.
+        """
         # initial random search
         print("NAI - Initial Random Search")
         new_samples = self._initial_random_search()
