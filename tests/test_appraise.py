@@ -125,17 +125,17 @@ def test__identify_cell(NAA, true_cell):
 
 def test_run(NAA):
     NAA.run()
-    assert NAA.results["mean"].shape == (2,)
-    assert NAA.results["sample_mean_error"].shape == (2,)
-    assert NAA.results["covariance"].shape == (2, 2)
-    assert NAA.results["sample_covariance_error"].shape == (2, 2)
+    assert NAA.mean.shape == (2,)
+    assert NAA.sample_mean_error.shape == (2,)
+    assert NAA.covariance.shape == (2, 2)
+    assert NAA.sample_covariance_error.shape == (2, 2)
 
 
 def test_MC_integrals(NAA):
     NAA.run(save=True)
-    mean = np.mean(NAA.results["samples"], axis=0)
-    covariance = np.cov(NAA.results["samples"], rowvar=False, bias=True)
+    mean = np.mean(NAA.samples, axis=0)
+    covariance = np.cov(NAA.samples, rowvar=False, bias=True)
 
-    assert NAA.results["mean"] == pytest.approx(mean)
-    assert NAA.results["covariance"] == pytest.approx(covariance)
-    assert NAA.results["samples"].shape == (NAA.nr * NAA.j, 2)
+    assert NAA.mean == pytest.approx(mean)
+    assert NAA.covariance == pytest.approx(covariance)
+    assert NAA.samples.shape == (NAA.nr * NAA.j, 2)
