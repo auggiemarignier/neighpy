@@ -32,3 +32,6 @@ coverage.xml
 # Environment files
 .env
 .venv/
+
+# dynamic versioning
+*/_version.py
