@@ -10,6 +10,7 @@ Welcome to neighpy's documentation!
     :maxdepth: 1
     :caption: Contents:
 
+    getstarted
     api
     examples
 
