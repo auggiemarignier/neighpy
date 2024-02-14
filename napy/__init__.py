@@ -1,4 +1,4 @@
 from .search import NASearcher
-from .appraise import NAAppariser
+from .appraise import NAAppraiser
 
 from ._version import __version__

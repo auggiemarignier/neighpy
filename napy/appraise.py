@@ -7,7 +7,7 @@ from tqdm import tqdm
 from ._mcintegrals import MCIntegrals
 
 
-class NAAppariser:
+class NAAppraiser:
     """
     Args:
         initial_ensemble (NDArray): The initial ensemble of samples.
