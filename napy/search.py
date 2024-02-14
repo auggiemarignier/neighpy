@@ -7,8 +7,15 @@ from tqdm import tqdm
 
 class NASearcher:
     """
-    Direct Search phase of the Neighbourhood Algorithm as in Sambridge 1999(I).
-    The Direct Search phase generates an approximation of the objective surface, finding models of acceptable data fit in a multidimensional parameter space in a derivative-free manner.
+    Args:
+        objective (Callable[[NDArray], float]): The objective function to minimize.
+            This function should take a single argument of type NDArray and return a float.
+        ns (int): The number of samples generated at each iteration.
+        nr (int): The number of cells to resample.
+        ni (int): The number of samples from initial random search.
+        n (int): The number of iterations.
+        bounds (tuple[tuple[float, float], ...]): A tuple of tuples representing the bounds of the search space.
+            Each inner tuple represents the lower and upper bounds for a specific dimension.
     """
 
     def __init__(
@@ -20,23 +27,6 @@ class NASearcher:
         n: int,
         bounds: tuple[tuple[float, float], ...],
     ) -> None:
-        """
-        Initialize a new instance of the NASearcher class.
-
-        Args:
-            objective (Callable[[NDArray], float]): The objective function to minimize.
-                This function should take a single argument of type NDArray and return a float.
-            ns (int): The number of samples generated at each iteration.
-            nr (int): The number of cells to resample.
-            ni (int): The number of samples from initial random search.
-            n (int): The number of iterations.
-            bounds (tuple[tuple[float, float], ...]): A tuple of tuples representing the bounds of the search space.
-                Each inner tuple represents the lower and upper bounds for a specific dimension.
-
-        Returns:
-            None
-        """
-
         self.objective = objective
 
         self.ns = ns  # number of samples generated at each iteration

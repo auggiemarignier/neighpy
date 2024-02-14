@@ -9,10 +9,12 @@ from ._mcintegrals import MCIntegrals
 
 class NAAppariser:
     """
-    Appraisal stage of the Neighbourhood Algorithm as in Sambridge 1999(II).
-    Based on an approximation of the objective surface created by the Direct Search stage of the NA,
-    the Appraisal stage resamples the approximation without needing to re-evaluate the objective function.
-    This is a fast and efficient way to obtain more samples from the objective surface.
+    Args:
+        initial_ensemble: NDArray - the initial ensemble of samples
+        objectives: NDArray - the objective function values for each sample
+        bounds: tuple[tuple[float, float], ...] - the bounds of the parameter space
+        n_resample: int - the number of resamples to use for the appraisal
+        n_walkers: int - the number of walkers to use in parallel
     """
 
     def __init__(
@@ -23,14 +25,6 @@ class NAAppariser:
         n_resample: int,
         n_walkers: int = 1,
     ):
-        """
-        Args:
-            initial_ensemble: NDArray - the initial ensemble of samples
-            objectives: NDArray - the objective function values for each sample
-            bounds: tuple[tuple[float, float], ...] - the bounds of the parameter space
-            n_resample: int - the number of resamples to use for the appraisal
-            n_walkers: int - the number of walkers to use in parallel
-        """
         self.initial_ensemble = initial_ensemble
         self.objectives = objectives
         self.bounds = bounds
