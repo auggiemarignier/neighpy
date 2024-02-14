@@ -78,11 +78,11 @@ class NAAppariser:
         return results
 
     def _appraise(self, accumulator: MCIntegrals, start_k: int = 0):
-        for x in self.random_walk_through_parameter_space(start_k):
+        for x in self._random_walk_through_parameter_space(start_k):
             accumulator.accumulate(x)
         return accumulator
 
-    def random_walk_through_parameter_space(self, start_k: int = 0):
+    def _random_walk_through_parameter_space(self, start_k: int = 0):
         """
         Perform the random walk through parameter space.
         Yields a new sample at each iteration to be used for calculating summary statistics.
@@ -90,12 +90,12 @@ class NAAppariser:
         xA = self.initial_ensemble[start_k].copy()
         for _ in tqdm(range(self.nr), desc="NAII - Random Walk"):
             for i in range(self.nd):
-                intersections, cells = self.axis_intersections(i, xA)
-                xpi = self.random_step(i, intersections, cells)
+                intersections, cells = self._axis_intersections(i, xA)
+                xpi = self._random_step(i, intersections, cells)
                 xA[i] = xpi
             yield xA
 
-    def axis_intersections(self, axis: int, xA: NDArray) -> tuple[NDArray, NDArray]:
+    def _axis_intersections(self, axis: int, xA: NDArray) -> tuple[NDArray, NDArray]:
         """
         Calculate the intersections of an axis passing through point vk in the kth cell
         with the boundaries of all cells
@@ -130,7 +130,7 @@ class NAAppariser:
             down_cells + [k] + up_cells
         )
 
-    def random_step(self, axis, intersections, cells):
+    def _random_step(self, axis, intersections, cells):
         """
         intersections are the points where the axis intersects the boundaries of the cells
         """
