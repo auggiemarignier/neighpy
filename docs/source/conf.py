@@ -34,6 +34,13 @@ extensions = [
 templates_path = ["_templates"]
 exclude_patterns = []
 
+# -- MyST configuration ---------------------------------------------------
+
+myst_enable_extensions = [
+    "amsmath",
+    "dollarmath",
+]
+myst_dmath_double_inline = True
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
