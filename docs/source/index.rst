@@ -7,12 +7,17 @@ Welcome to neighpy's documentation!
 ===================================
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
+   :caption: API:
 
-   search_
-   appraise
+   modulesrst/search_
+   modulesrst/appraise
 
+.. toctree::
+    :maxdepth: 1
+    :caption: Examples:
+
+    examples/rosenbrock
 
 
 Indices and tables
