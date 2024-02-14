@@ -44,7 +44,7 @@ class NAAppariser:
         Calculates a few basic MC integrals (mean, covariance and their errors).
 
         Args:
-            save: bool - whether to save the samples used in the appraisal.  Set to False to save memory.
+            save: bool - whether to save the new samples from the appraisal.  Set to False to save memory, or if you only want a mean and covariance.
         """
 
         with Parallel(n_jobs=self.j) as parallel:
