@@ -10,7 +10,7 @@ Welcome to neighpy's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   search
+   search_
    appraise
 
 
