@@ -10,6 +10,9 @@ Welcome to neighpy's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   search
+   appraise
+
 
 
 Indices and tables
