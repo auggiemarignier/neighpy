@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from napy._mcintegrals import MCIntegrals
+from neighpy._mcintegrals import MCIntegrals
 
 
 @pytest.fixture

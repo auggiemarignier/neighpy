@@ -6,7 +6,7 @@ from shapely.geometry import LineString, Point
 from shapely.ops import polygonize
 import matplotlib.pyplot as plt
 
-from napy import NASearcher
+from neighpy import NASearcher
 
 
 def objective(x: NDArray) -> float:

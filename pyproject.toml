@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "napy"
+name = "neighpy"
 version = "0.0.0"
 description = ""
 authors = ["auggiemarignier <augustin.marignier@anu.edu.au>"]
@@ -35,9 +35,9 @@ myst-nb = "^1.0.0"
 enable = true
 
 [tool.poetry-dynamic-versioning.substitution]
-files = ["napy/_version.py"]
+files = ["neighpy/_version.py"]
 
-[tool.poetry-dynamic-versioning.files."napy/_version.py"]
+[tool.poetry-dynamic-versioning.files."neighpy/_version.py"]
 persistent-substitution = true
 initial-content = """
   # These version placeholders will be replaced later during substitution.

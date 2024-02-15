@@ -10,7 +10,7 @@ neighpy
 First presented in two papers by M. Sambridge at the Australian National University in 1999, it has since been widely used, particularly in the geophysical community, for the optimisation of complex, high-dimensional functions.
 
 This implementation hopes to replace the original Fortran code with a more modern, user-friendly and flexible Python package.
-It is a very simple implementation, with just two classes to implement the two phases of the algorithm: the :py:class:`~napy.search.NASearcher` class for the optimisation phase, and the :py:class:`~napy.appraise.NAAppraiser` class for the appraisal phase.
+It is a very simple implementation, with just two classes to implement the two phases of the algorithm: the :py:class:`~neighpy.search.NASearcher` class for the optimisation phase, and the :py:class:`~neighpy.appraise.NAAppraiser` class for the appraisal phase.
 
 .. toctree::
     :maxdepth: 1

@@ -6,5 +6,5 @@ Based on an approximation of the objective surface created by the Direct Search 
 the Appraisal stage resamples the approximation without needing to re-evaluate the objective function.
 This is a fast and efficient way to obtain more samples from the objective surface.
 
-.. automodule:: napy.appraise
+.. automodule:: neighpy.appraise
     :members:

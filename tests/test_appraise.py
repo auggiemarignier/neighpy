@@ -3,7 +3,7 @@ from numpy.typing import NDArray
 import pytest
 import matplotlib.pyplot as plt
 
-from napy import NAAppraiser
+from neighpy import NAAppraiser
 
 
 def objective(x: NDArray) -> float:
