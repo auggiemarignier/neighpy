@@ -9,10 +9,9 @@ on:
     paths-ignore:
       - "examples/**"
   push:
-    branches:
-        - "**"
     paths-ignore:
         - "examples/**"
+        - "docs/**"
 
 jobs:
   test:
