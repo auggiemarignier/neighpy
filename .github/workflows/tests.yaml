@@ -37,6 +37,7 @@ jobs:
         uses: Gr1N/setup-poetry@v8
       - name: Install dependencies
         run: |
+          poetry self add "poetry-dynamic-versioning[plugin]"
           poetry config virtualenvs.in-project true
           poetry install
       #----------------------------------------------
