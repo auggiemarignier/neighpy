@@ -1,4 +1,4 @@
-[![tests](https://github.com/auggiemarignier/neighpy/actions/workflows/tests.yml/badge.svg)] [![docs](https://readthedocs.org/projects/neighpy/badge/?version=latest)](https://neighpy.readthedocs.io/en/latest/?badge=latest)
+[![test](https://github.com/auggiemarignier/neighpy/actions/workflows/tests.yaml/badge.svg)](https://github.com/auggiemarignier/neighpy/actions/workflows/tests.yaml) [![docs](https://readthedocs.org/projects/neighpy/badge/?version=latest)](https://neighpy.readthedocs.io/en/latest/?badge=latest)
 
 # neighpy
 
