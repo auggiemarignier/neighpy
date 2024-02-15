@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "napy"
-version = "0.1.0"
+version = "0.0.0"
 description = ""
 authors = ["auggiemarignier <augustin.marignier@anu.edu.au>"]
 readme = "README.md"
@@ -25,6 +25,26 @@ types-tqdm = "^4.66.0.20240106"
 jupyter = "^1.0.0"
 matplotlib = "^3.8.2"
 
+
+[tool.poetry.group.docs.dependencies]
+sphinx = "^7.2.6"
+sphinx-book-theme = "^1.1.2"
+myst-nb = "^1.0.0"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+
+[tool.poetry-dynamic-versioning.substitution]
+files = ["napy/_version.py"]
+
+[tool.poetry-dynamic-versioning.files."napy/_version.py"]
+persistent-substitution = true
+initial-content = """
+  # These version placeholders will be replaced later during substitution.
+  __version__ = "0.0.0"
+  __version_tuple__ = (0, 0, 0)
+"""
+
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
