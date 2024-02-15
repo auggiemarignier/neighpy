@@ -1,0 +1,51 @@
+# Modified from https://github.com/marketplace/actions/install-poetry-action
+
+name: test
+
+on: 
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - "examples/**"
+  push:
+    branches:
+        - main      
+    paths-ignore:
+        - "examples/**"
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ "ubuntu-latest", "macos-latest" ]
+        python-version: [ "3.9", "3.10", "3.11", "3.12" ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      #----------------------------------------------
+      #       check-out repo and set-up python     
+      #----------------------------------------------
+      - name: Check out repository
+        uses: actions/checkout@v2
+      - name: Set up python 
+        uses: actions/setup-python@v2
+        with:
+          python-version:  ${{ matrix.python-version }}
+      #----------------------------------------------
+      #  -----  install & configure poetry  -----      
+      #----------------------------------------------
+      - name: Install Poetry
+        uses: Gr1N/setup-poetry@v8
+      - name: Install dependencies
+        run: |
+          poetry config virtualenvs.in-project true
+          poetry install
+      #----------------------------------------------
+      #              run test suite   
+      #----------------------------------------------
+      - name: Run tests
+        run: |
+          source .venv/bin/activate
+          python -c "import octo; print(octo.__version__)"
+          pytest tests/
