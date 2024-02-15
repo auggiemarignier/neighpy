@@ -1,3 +1,5 @@
+[![tests](https://github.com/auggiemarignier/neighpy/actions/workflows/tests.yml/badge.svg)] [![docs](https://readthedocs.org/projects/neighpy/badge/?version=latest)](https://neighpy.readthedocs.io/en/latest/?badge=latest)
+
 # neighpy
 
 ``neighphy`` is a Python implementation of the Neighbourhood Algorithm for the optimisation and appraisal of high-dimensional loss surfaces.
