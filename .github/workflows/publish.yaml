@@ -9,9 +9,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build and publish to pypi
-      uses: JRubics/poetry-publish@v2.0
+      uses: JRubics/poetry-publish@v1.16
       with:
         pypi_token: ${{ secrets.TESTPYPI_TOKEN }}
-        poetry_install_options: "--only main"
+        plugins: "poetry-dynamic-versioning[plugin]"
         repository_name: "testpypi"
         repository_url: "https://test.pypi.org/legacy/"
