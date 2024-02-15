@@ -12,7 +12,6 @@ jobs:
       uses: JRubics/poetry-publish@v2.0
       with:
         pypi_token: ${{ secrets.TESTPYPI_TOKEN }}
-        plugins: "poetry-dynamic-versioning[plugin]"
         poetry_install_options: "--only main"
         repository_name: "testpypi"
         repository_url: "https://test.pypi.org/legacy/"
