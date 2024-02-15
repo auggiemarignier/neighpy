@@ -4,6 +4,7 @@ version = "0.0.0"
 description = ""
 authors = ["auggiemarignier <augustin.marignier@anu.edu.au>"]
 readme = "README.md"
+include = ["neighpy/_version.py"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
