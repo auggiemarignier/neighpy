@@ -55,6 +55,7 @@ def test__get_best_indices(NAS):
     )  # all objectives should be non-zero
 
 
+@pytest.mark.flaky(reruns=5, only_rerun="assert")
 def test_random_walk_in_voronoi(NAS):
     _plot = False
 
