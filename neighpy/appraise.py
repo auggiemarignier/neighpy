@@ -101,7 +101,7 @@ class NAAppraiser:
                 xA[i] = xpi
             yield xA
 
-    def _axis_intersections(self, axis: int, xA: NDArray) -> tuple[NDArray, NDArray]:
+    def _axis_intersections(self, axis: int, xA: NDArray) -> Tuple[NDArray, NDArray]:
         """
         Calculate the intersections of an axis passing through point vk in the kth cell
         with the boundaries of all cells
