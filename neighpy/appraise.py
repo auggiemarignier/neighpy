@@ -1,5 +1,6 @@
 import numpy as np
 from numpy.typing import NDArray
+from typing import Tuple
 import warnings
 from joblib import Parallel, delayed
 from tqdm import tqdm
@@ -12,7 +13,7 @@ class NAAppraiser:
     Args:
         initial_ensemble (NDArray): The initial ensemble of samples.
         objectives (NDArray): The objective function values for each sample.
-        bounds (tuple[tuple[float, float], ...]): The bounds of the parameter space.
+        bounds (Tuple[Tuple[float, float], ...]): The bounds of the parameter space.
         n_resample (int): The number of resamples to use for the appraisal.
         n_walkers (int): The number of walkers to use in parallel.
     """
@@ -21,7 +22,7 @@ class NAAppraiser:
         self,
         initial_ensemble: NDArray,
         objectives: NDArray,
-        bounds: tuple[tuple[float, float], ...],
+        bounds: Tuple[Tuple[float, float], ...],
         n_resample: int,
         n_walkers: int = 1,
     ):

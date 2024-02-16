@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.typing import NDArray
-from typing import Callable
+from typing import Callable, Tuple
 from joblib import Parallel, delayed
 from tqdm import tqdm
 
@@ -14,7 +14,7 @@ class NASearcher:
         nr (int): The number of cells to resample.
         ni (int): The number of samples from initial random search.
         n (int): The number of iterations.
-        bounds (tuple[tuple[float, float], ...]): A tuple of tuples representing the bounds of the search space.
+        bounds (Tuple[Tuple[float, float], ...]): A tuple of tuples representing the bounds of the search space.
             Each inner tuple represents the lower and upper bounds for a specific dimension.
     """
 
@@ -25,7 +25,7 @@ class NASearcher:
         nr: int,
         ni: int,
         n: int,
-        bounds: tuple[tuple[float, float], ...],
+        bounds: Tuple[Tuple[float, float], ...],
     ) -> None:
         self.objective = objective
 
