@@ -174,7 +174,8 @@ class NAAppraiser:
         vji = self.initial_ensemble[:, axis]
         a = di2[k] - di2
         b = self.Cm[axis] * (vki - vji)
-        with warnings.catch_warnings(action="ignore"):
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=RuntimeWarning)
             xji = 0.5 * (vki + vji + a / b)
 
         if down:
