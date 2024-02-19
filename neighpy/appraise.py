@@ -73,7 +73,7 @@ class NAAppraiser:
             self.samples = np.stack(accumulator.samples)
 
     def _run_serial(self, save: bool = True) -> MCIntegrals:
-        start = np.argmin(self.objectives)
+        start = np.argmax(self.objectives)
         accumulator = MCIntegrals(self.nd, save)
         for x in self._random_walk_through_parameter_space(start):
             accumulator.accumulate(x)
@@ -82,9 +82,15 @@ class NAAppraiser:
     def _run_parallel(self, save: bool = True) -> MCIntegrals:
         with Parallel(n_jobs=self.j) as parallel:
             # select start points for the random walks
+            # these are taken from the best 50% of cells to avoid walking
+            # in low probability regions
+            start_points = np.random.choice(
+                np.argpartition(self.objectives, -self.Ne // 2)[-self.Ne // 2 :],
+                self.j,
+                replace=False,
+            )
             # ensure that at least one walker starts at the best cell
-            start_points = np.random.choice(self.Ne, self.j, replace=False)
-            start_points[0] = np.argmin(self.objectives)
+            start_points[0] = np.argmax(self.objectives)
 
             # create a MCIntegrals object for each walker
             accumulators = [MCIntegrals(self.nd, save) for _ in range(self.j)]
