@@ -57,7 +57,26 @@ class NAAppraiser:
         - **covariance** (`NDArray`) - the covariance of the samples.
         - **sample_covariance_error** (`NDArray`) - the error in the covariance.
         """
+        if self.j == 1:
+            accumulator = self._run_serial(save)
+        else:
+            accumulator = self._run_parallel(save)
 
+        self.mean = accumulator.mean()
+        self.sample_mean_error = accumulator.sample_mean_error()
+        self.covariance = accumulator.covariance()
+        self.sample_covariance_error = accumulator.sample_covariance_error()
+        if save and accumulator.samples is not None:
+            self.samples = np.stack(accumulator.samples)
+
+    def _run_serial(self, save: bool = True) -> MCIntegrals:
+        start = np.argmin(self.objectives)
+        accumulator = MCIntegrals(self.nd, save)
+        for x in self._random_walk_through_parameter_space(start):
+            accumulator.accumulate(x)
+        return accumulator
+
+    def _run_parallel(self, save: bool = True) -> MCIntegrals:
         with Parallel(n_jobs=self.j) as parallel:
             # select start points for the random walks
             # ensure that at least one walker starts at the best cell
@@ -78,12 +97,7 @@ class NAAppraiser:
         for acc in accumulators:
             accumulator.accumulate(acc)
 
-        self.mean = accumulator.mean()
-        self.sample_mean_error = accumulator.sample_mean_error()
-        self.covariance = accumulator.covariance()
-        self.sample_covariance_error = accumulator.sample_covariance_error()
-        if save and accumulator.samples is not None:
-            self.samples = np.stack(accumulator.samples)
+        return accumulator
 
     def _appraise(self, accumulator: MCIntegrals, start_k: int = 0):
         for x in self._random_walk_through_parameter_space(start_k):
