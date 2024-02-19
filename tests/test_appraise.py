@@ -31,7 +31,7 @@ def NAA():
     n_resample = 10
     n_walkers = 1
     return NAAppraiser(
-        initial_ensemble, objectives, bounds, n_resample, n_walkers, False
+        initial_ensemble, objectives, bounds, n_resample, n_walkers, False, False
     )
 
 

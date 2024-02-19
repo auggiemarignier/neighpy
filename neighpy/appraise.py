@@ -17,6 +17,7 @@ class NAAppraiser:
         n_resample (int): The number of resamples to use for the appraisal.
         n_walkers (int): The number of walkers to use in parallel.
         log_objectives (bool): Whether the objective function values are in log space e.g. they represent the log posterior pdf.
+        verbose (bool): Whether to display a progress bar.
     """
 
     def __init__(
@@ -27,6 +28,7 @@ class NAAppraiser:
         n_resample: int,
         n_walkers: int = 1,
         log_objectives: bool = True,
+        verbose: bool = True,
     ):
         self.initial_ensemble = initial_ensemble
         self.objectives = objectives if log_objectives else np.log(objectives)
@@ -35,6 +37,7 @@ class NAAppraiser:
         self.lower = np.array([b[0] for b in bounds])
         self.upper = np.array([b[1] for b in bounds])
         self.Cm = 1 / (self.upper - self.lower) ** 2
+        self.verbose = verbose
 
         self.Ne = len(initial_ensemble)
         self.Nr = n_resample
@@ -110,7 +113,9 @@ class NAAppraiser:
         Yields a new sample at each iteration to be used for calculating summary statistics.
         """
         xA = self.initial_ensemble[start_k].copy()
-        for _ in tqdm(range(self.nr), desc="NAII - Random Walk"):
+        for _ in tqdm(
+            range(self.nr), desc="NAII - Random Walk", disable=not self.verbose
+        ):
             for i in range(self.nd):
                 intersections, cells = self._axis_intersections(i, xA)
                 xpi = self._random_step(i, intersections, cells)
