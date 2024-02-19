@@ -6,32 +6,38 @@ from joblib import Parallel, delayed
 from tqdm import tqdm
 
 from ._mcintegrals import MCIntegrals
+from .search import NASearcher
 
 
 class NAAppraiser:
     """
     Args:
-        initial_ensemble (NDArray): The initial ensemble of samples.
-        objectives (NDArray): The objective function values for each sample.
-        bounds (Tuple[Tuple[float, float], ...]): The bounds of the parameter space.
         n_resample (int): The number of resamples to use for the appraisal.
         n_walkers (int): The number of walkers to use in parallel.
-        log_objectives (bool): Whether the objective function values are in log space e.g. they represent the log posterior pdf.
+        searcher (NASearcher): The searcher object used to generate the initial ensemble and log_ppd. If this is not None, the `initial_ensemble`, `log_ppd` and `bounds` will be taken from this object.
+        initial_ensemble (NDArray): The initial ensemble of samples.  Ignored if `searcher` is not None.
+        log_ppd (NDArray): The log posterior probability values for each sample. Ignored if `searcher` is not None.
+        bounds (Tuple[Tuple[float, float], ...]): The bounds of the parameter space. Ignored if `searcher` is not None.
         verbose (bool): Whether to display a progress bar.
     """
 
     def __init__(
         self,
-        initial_ensemble: NDArray,
-        objectives: NDArray,
-        bounds: Tuple[Tuple[float, float], ...],
         n_resample: int,
         n_walkers: int = 1,
-        log_objectives: bool = True,
+        searcher: NASearcher | None = None,
+        initial_ensemble: NDArray | None = None,
+        log_ppd: NDArray | None = None,
+        bounds: Tuple[Tuple[float, float], ...] | None = None,
         verbose: bool = True,
     ):
+        if isinstance(searcher, NASearcher):
+            initial_ensemble = searcher.samples
+            log_ppd = -searcher.objectives
+            bounds = searcher.bounds
+
         self.initial_ensemble = initial_ensemble
-        self.objectives = objectives if log_objectives else np.log(objectives)
+        self.log_ppd = log_ppd
         self.bounds = bounds
         self.nd = len(bounds)
         self.lower = np.array([b[0] for b in bounds])
@@ -40,9 +46,8 @@ class NAAppraiser:
         self.verbose = verbose
 
         self.Ne = len(initial_ensemble)
-        self.Nr = n_resample
         self.j = n_walkers if n_walkers >= 1 else 1
-        self.nr = self.Nr // self.j
+        self.nr = n_resample // n_walkers
 
     def run(self, save: bool = True) -> None:
         """
@@ -73,7 +78,7 @@ class NAAppraiser:
             self.samples = np.stack(accumulator.samples)
 
     def _run_serial(self, save: bool = True) -> MCIntegrals:
-        start = np.argmax(self.objectives)
+        start = np.argmax(self.log_ppd)
         accumulator = MCIntegrals(self.nd, save)
         for x in self._random_walk_through_parameter_space(start):
             accumulator.accumulate(x)
@@ -85,12 +90,12 @@ class NAAppraiser:
             # these are taken from the best 50% of cells to avoid walking
             # in low probability regions
             start_points = np.random.choice(
-                np.argpartition(self.objectives, -self.Ne // 2)[-self.Ne // 2 :],
+                np.argpartition(self.log_ppd, -self.Ne // 2)[-self.Ne // 2 :],
                 self.j,
                 replace=False,
             )
             # ensure that at least one walker starts at the best cell
-            start_points[0] = np.argmax(self.objectives)
+            start_points[0] = np.argmax(self.log_ppd)
 
             # create a MCIntegrals object for each walker
             accumulators = [MCIntegrals(self.nd, save) for _ in range(self.j)]
@@ -172,8 +177,8 @@ class NAAppraiser:
             k = self._identify_cell(xpi, intersections, cells)  # cell containing xpi
 
             r = np.random.uniform(0, 1)
-            logPxpi = self.objectives[k]
-            logPmax = np.max(self.objectives[cells])
+            logPxpi = self.log_ppd[k]
+            logPmax = np.max(self.log_ppd[cells])
             if np.log(r) < logPxpi - logPmax:  # eqn (24) Sambridge 1999(II)
                 return xpi
 
