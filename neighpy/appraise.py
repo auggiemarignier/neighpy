@@ -16,6 +16,7 @@ class NAAppraiser:
         bounds (Tuple[Tuple[float, float], ...]): The bounds of the parameter space.
         n_resample (int): The number of resamples to use for the appraisal.
         n_walkers (int): The number of walkers to use in parallel.
+        log_objectives (bool): Whether the objective function values are in log space e.g. they represent the log posterior pdf.
     """
 
     def __init__(
@@ -25,9 +26,10 @@ class NAAppraiser:
         bounds: Tuple[Tuple[float, float], ...],
         n_resample: int,
         n_walkers: int = 1,
+        log_objectives: bool = True,
     ):
         self.initial_ensemble = initial_ensemble
-        self.objectives = objectives
+        self.objectives = objectives if log_objectives else np.log(objectives)
         self.bounds = bounds
         self.nd = len(bounds)
         self.lower = np.array([b[0] for b in bounds])
@@ -145,9 +147,9 @@ class NAAppraiser:
             k = self._identify_cell(xpi, intersections, cells)  # cell containing xpi
 
             r = np.random.uniform(0, 1)
-            Pxpi = self.objectives[k]
-            Pmax = np.max(self.objectives[cells])
-            if np.log(r) < np.log(Pxpi) - np.log(Pmax):  # eqn (24) Sambridge 1999(II)
+            logPxpi = self.objectives[k]
+            logPmax = np.max(self.objectives[cells])
+            if np.log(r) < logPxpi - logPmax:  # eqn (24) Sambridge 1999(II)
                 return xpi
 
     def _get_axis_intersections(

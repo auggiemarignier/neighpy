@@ -30,7 +30,9 @@ def NAA():
     bounds = ((lower[0], upper[0]), (lower[1], upper[1]))
     n_resample = 10
     n_walkers = 2
-    return NAAppraiser(initial_ensemble, objectives, bounds, n_resample, n_walkers)
+    return NAAppraiser(
+        initial_ensemble, objectives, bounds, n_resample, n_walkers, False
+    )
 
 
 def test__axis_intersections(NAA):
