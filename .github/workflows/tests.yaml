@@ -8,6 +8,7 @@ on:
       - main
     paths-ignore:
       - "examples/**"
+      - "docs/examples/**"
   push:
     paths-ignore:
         - "examples/**"
