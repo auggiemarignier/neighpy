@@ -33,6 +33,7 @@ optional = true
 matplotlib = ">=3.5"
 scipy = ">=1.8"
 jupyter = "^1.0.0"
+geo-espresso = "^0.3.11"
 
 [tool.poetry.group.docs]
 optional = true
