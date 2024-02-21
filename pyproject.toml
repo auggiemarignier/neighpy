@@ -34,6 +34,7 @@ matplotlib = ">=3.5"
 scipy = ">=1.8"
 jupyter = "^1.0.0"
 geo-espresso = "^0.3.11"
+seislib = {git = "https://github.com/fmagrini/seislib.git"}
 
 [tool.poetry.group.docs]
 optional = true
