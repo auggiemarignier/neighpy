@@ -7,3 +7,5 @@ Examples
    :caption: Examples:
 
    examples/rosenbrock
+   examples/regression
+   examples/receiverfunction
