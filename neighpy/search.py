@@ -51,7 +51,7 @@ class NASearcher:
         )  # start with inf since we want to minimize
         self._current_best_ind = 0
 
-    def run(self) -> None:
+    def run(self, parallel=True) -> None:
         """
         Run the Direct Search.
 
@@ -72,7 +72,7 @@ class NASearcher:
             self._current_best_ind = inds[0]
             cells_to_resample = self.samples[inds]
 
-            new_samples = Parallel(n_jobs=self.nr)(
+            new_samples = Parallel(n_jobs=self.nr if parallel else 1)(
                 delayed(self._random_walk_in_voronoi)(cell, k)
                 for k, cell in zip(inds, cells_to_resample)
             )
