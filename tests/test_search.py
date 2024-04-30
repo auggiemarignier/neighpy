@@ -118,3 +118,16 @@ def test_run(NAS):
     assert np.all(NAS.samples >= NAS.lower)
     assert np.all(NAS.samples <= NAS.upper)
     assert NAS.np == NAS.nt
+
+
+def test_objective_args():
+    def objective(x: NDArray, a: int, b: float) -> float:
+        return (-np.sum(x) * a) / b
+
+    a = 2
+    b = 3.0
+    args = (a, b)
+    NAS = NASearcher(objective, 10, 5, 5, 20, ((-1.0, 1.0), (0.0, 10.0)), args=args)
+
+    x = np.array([1, 2, 3])
+    assert NAS.objective(x) == -4.0
