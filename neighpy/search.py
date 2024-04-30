@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.typing import NDArray
-from typing import Any, Tuple, Protocol
+from typing import Any, Tuple, Protocol, Concatenate, ParamSpec, Callable
 from joblib import Parallel, delayed
 from tqdm import tqdm
 
@@ -12,6 +12,9 @@ class ObjectiveFunction(Protocol):
         # A type hint of Callable[[NDArray], float] would be too restrictive
         # A type checker will probably complain about this, but it's the best we can do for now
         ...
+
+
+P = ParamSpec("P")
 
 
 class NASearcher:
@@ -29,7 +32,7 @@ class NASearcher:
 
     def __init__(
         self,
-        objective: ObjectiveFunction,
+        objective: Callable[Concatenate[NDArray, P], float],
         ns: int,
         nr: int,
         ni: int,
