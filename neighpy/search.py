@@ -6,6 +6,10 @@ from tqdm import tqdm
 
 
 class ObjectiveFunction(Protocol):
+    """
+    :meta private:
+    """
+
     def __call__(self, x: NDArray, *args: Any) -> float:
         # Any type hint because the objective function supplied by the user can have any signature
         # as long as its first argument is of type NDArray and returns a float
@@ -32,6 +36,7 @@ class NASearcher:
         n (int): The number of iterations.
         bounds (Tuple[Tuple[float, float], ...]): A tuple of tuples representing the bounds of the search space.
             Each inner tuple represents the lower and upper bounds for a specific dimension.
+        args (Tuple, optional): Additional arguments to pass to the objective function.
     """
 
     def __init__(
