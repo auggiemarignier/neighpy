@@ -1,8 +1,17 @@
 import numpy as np
 from numpy.typing import NDArray
-from typing import Callable, Tuple
+from typing import Any, Tuple, Protocol
 from joblib import Parallel, delayed
 from tqdm import tqdm
+
+
+class ObjectiveFunction(Protocol):
+    def __call__(self, x: NDArray, *args: Any) -> float:
+        # Any type hint because the objective function supplied by the user can have any signature
+        # as long as its first argument is of type NDArray and returns a float
+        # A type hint of Callable[[NDArray], float] would be too restrictive
+        # A type checker will probably complain about this, but it's the best we can do for now
+        ...
 
 
 class NASearcher:
@@ -20,14 +29,16 @@ class NASearcher:
 
     def __init__(
         self,
-        objective: Callable[[NDArray], float],
+        objective: ObjectiveFunction,
         ns: int,
         nr: int,
         ni: int,
         n: int,
         bounds: Tuple[Tuple[float, float], ...],
+        args: Tuple = (),
     ) -> None:
-        self.objective = objective
+        self._objective = objective
+        self.objective_args = args
 
         self.ns = ns  # number of samples generated at each iteration
         self.nr = nr  # number of cells to resample
@@ -77,6 +88,9 @@ class NASearcher:
                 for k, cell in zip(inds, cells_to_resample)
             )
             self._update_ensemble(np.concatenate(new_samples))
+
+    def objective(self, x: NDArray) -> float:
+        return self._objective(x, *self.objective_args)
 
     def _initial_random_search(self) -> NDArray:
         return np.random.uniform(
