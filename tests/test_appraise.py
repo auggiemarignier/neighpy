@@ -146,3 +146,32 @@ def test_MC_integrals(NAA):
     assert NAA.mean == pytest.approx(mean)
     assert NAA.covariance == pytest.approx(covariance)
     assert NAA.samples.shape == (NAA.nr * NAA.j, 2)
+
+
+def test_seed():
+    initial_ensemble = np.random.rand(5, 2)
+    log_ppd = np.random.rand(5)
+
+    NAA1 = NAAppraiser(
+        n_resample=10,
+        n_walkers=1,
+        initial_ensemble=initial_ensemble,
+        log_ppd=log_ppd,
+        bounds=((0, 1), (0, 1)),
+        verbose=False,
+        seed=42,
+    )
+    NAA2 = NAAppraiser(
+        n_resample=10,
+        n_walkers=1,
+        initial_ensemble=initial_ensemble,
+        log_ppd=log_ppd,
+        bounds=((0, 1), (0, 1)),
+        verbose=False,
+        seed=42,
+    )
+
+    NAA1.run()
+    NAA2.run()
+
+    assert np.array_equal(NAA1.samples, NAA2.samples)

@@ -29,6 +29,7 @@ class NAAppraiser:
         log_ppd (NDArray): The log posterior probability values for each sample. Ignored if :code:`searcher` is not None.
         bounds (Tuple[Tuple[float, float], ...]): The bounds of the parameter space. Ignored if :code:`searcher` is not None.
         verbose (bool): Whether to display a progress bar.
+        seed (int): Seed for the random number generator.
     """
 
     def __init__(
@@ -40,6 +41,7 @@ class NAAppraiser:
         log_ppd: NDArray | None = None,
         bounds: Tuple[Tuple[float, float], ...] | None = None,
         verbose: bool = True,
+        seed: int | None = None,
     ):
         if isinstance(searcher, NASearcher):
             initial_ensemble = searcher.samples
@@ -58,6 +60,8 @@ class NAAppraiser:
         self.Ne = len(initial_ensemble)
         self.j = n_walkers if n_walkers >= 1 else 1
         self.nr = n_resample // n_walkers
+
+        self.rng = np.random.default_rng(seed)
 
     def run(self, save: bool = True) -> None:
         """
@@ -183,10 +187,10 @@ class NAAppraiser:
         intersections are the points where the axis intersects the boundaries of the cells
         """
         while True:
-            xpi = np.random.uniform(self.lower[axis], self.upper[axis])  # proposed step
+            xpi = self.rng.uniform(self.lower[axis], self.upper[axis])  # proposed step
             k = self._identify_cell(xpi, intersections, cells)  # cell containing xpi
 
-            r = np.random.uniform(0, 1)
+            r = self.rng.uniform(0, 1)
             logPxpi = self.log_ppd[k]
             logPmax = np.max(self.log_ppd[cells])
             if np.log(r) < logPxpi - logPmax:  # eqn (24) Sambridge 1999(II)
