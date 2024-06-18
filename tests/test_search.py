@@ -20,7 +20,8 @@ def NAS():
     ni = 5
     n = 20
     bounds = ((-1.0, 1.0), (0.0, 10.0))
-    return NASearcher(objective, ns, nr, ni, n, bounds)
+    seed = 42
+    return NASearcher(objective, ns, nr, ni, n, bounds, seed=seed)
 
 
 def test__initial_random_search(NAS):
@@ -131,3 +132,14 @@ def test_objective_args():
 
     x = np.array([1, 2, 3])
     assert NAS.objective(x) == -4.0
+
+
+def test_seed():
+    NAS1 = NASearcher(objective, 10, 5, 5, 20, ((-1.0, 1.0), (0.0, 10.0)), seed=42)
+    NAS2 = NASearcher(objective, 10, 5, 5, 20, ((-1.0, 1.0), (0.0, 10.0)), seed=42)
+
+    NAS1.run()
+    NAS2.run()
+
+    assert np.all(NAS1.samples == NAS2.samples)
+    assert np.all(NAS1.objectives == NAS2.objectives)

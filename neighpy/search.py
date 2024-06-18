@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.typing import NDArray
-from typing import Any, Tuple, Protocol
+from typing import Any, Tuple, Protocol, Union
 from joblib import Parallel, delayed
 from tqdm import tqdm
 
@@ -37,6 +37,7 @@ class NASearcher:
         bounds (Tuple[Tuple[float, float], ...]): A tuple of tuples representing the bounds of the search space.
             Each inner tuple represents the lower and upper bounds for a specific dimension.
         args (Tuple, optional): Additional arguments to pass to the objective function.
+        seed (int, optional): Seed for the random number generator.
     """
 
     def __init__(
@@ -48,6 +49,7 @@ class NASearcher:
         n: int,
         bounds: Tuple[Tuple[float, float], ...],
         args: Tuple = (),
+        seed: Union[int, None] = None,
     ) -> None:
         self._objective = objective
         self.objective_args = args
@@ -73,6 +75,8 @@ class NASearcher:
             self.nt, np.inf
         )  # start with inf since we want to minimize
         self._current_best_ind = 0
+
+        self.rng = np.random.default_rng(seed)
 
     def run(self, parallel=True) -> None:
         """
@@ -105,7 +109,7 @@ class NASearcher:
         return self._objective(x, *self.objective_args)
 
     def _initial_random_search(self) -> NDArray:
-        return np.random.uniform(
+        return self.rng.uniform(
             low=self.lower,
             high=self.upper,
             size=(self.ni, self.nd),
@@ -150,7 +154,7 @@ class NASearcher:
                 # eqns (20, 21) Sambridge 1999
                 li = np.nanmax(np.hstack((self.lower[i], xji[xji < xA[i]])))
                 ui = np.nanmin(np.hstack((self.upper[i], xji[xji > xA[i]])))
-                xA[i] = np.random.uniform(li, ui)
+                xA[i] = self.rng.uniform(li, ui)
 
                 d2_previous_axis = d2_current_axis
 
