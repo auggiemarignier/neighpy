@@ -84,7 +84,9 @@ def test_random_walk_in_voronoi(NAS):
         for poly in polys:
             if poly.contains(Point(vk)):
                 # perform random walk
-                new_samples = NAS._random_walk_in_voronoi(vk, k)
+                new_samples = NAS._random_walk_in_voronoi(
+                    vk, k, np.random.default_rng(42)
+                )
                 assert new_samples.shape == (NAS.nspnr, NAS.nd)
                 if _plot:
                     plt.plot(new_samples[:, 0], new_samples[:, 1], "o-", color="blue")
