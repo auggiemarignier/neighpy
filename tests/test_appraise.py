@@ -149,12 +149,12 @@ def test_MC_integrals(NAA):
 
 
 def test_seed():
-    initial_ensemble = np.random.rand(5, 2)
-    log_ppd = np.random.rand(5)
+    initial_ensemble = np.random.rand(15999, 2)
+    log_ppd = np.random.rand(15999)
 
     NAA1 = NAAppraiser(
         n_resample=10,
-        n_walkers=1,
+        n_walkers=2,
         initial_ensemble=initial_ensemble,
         log_ppd=log_ppd,
         bounds=((0, 1), (0, 1)),
@@ -163,7 +163,7 @@ def test_seed():
     )
     NAA2 = NAAppraiser(
         n_resample=10,
-        n_walkers=1,
+        n_walkers=2,
         initial_ensemble=initial_ensemble,
         log_ppd=log_ppd,
         bounds=((0, 1), (0, 1)),

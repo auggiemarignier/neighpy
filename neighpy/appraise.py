@@ -61,7 +61,8 @@ class NAAppraiser:
         self.j = n_walkers if n_walkers >= 1 else 1
         self.nr = n_resample // n_walkers
 
-        self.rng = np.random.default_rng(seed)
+        ss = np.random.SeedSequence(seed)
+        self.rngs = [np.random.default_rng(s) for s in ss.spawn(self.j)]
 
     def run(self, save: bool = True) -> None:
         """
@@ -94,7 +95,7 @@ class NAAppraiser:
     def _run_serial(self, save: bool = True) -> MCIntegrals:
         start = np.argmax(self.log_ppd)
         accumulator = MCIntegrals(self.nd, save)
-        for x in self._random_walk_through_parameter_space(start):
+        for x in self._random_walk_through_parameter_space(self.rngs[0], start):
             accumulator.accumulate(x)
         return accumulator
 
@@ -116,8 +117,8 @@ class NAAppraiser:
 
             # run the walkers in parallel
             accumulators = parallel(
-                delayed(self._appraise)(acc, start)
-                for start, acc in zip(start_points, accumulators)
+                delayed(self._appraise)(acc, rng, start)
+                for acc, rng, start in zip(accumulators, self.rngs, start_points)
             )
 
         # combine the results
@@ -127,12 +128,19 @@ class NAAppraiser:
 
         return accumulator
 
-    def _appraise(self, accumulator: MCIntegrals, start_k: int = 0):
-        for x in self._random_walk_through_parameter_space(start_k):
+    def _appraise(
+        self,
+        accumulator: MCIntegrals,
+        rng: np.random.Generator,
+        start_k: int = 0,
+    ):
+        for x in self._random_walk_through_parameter_space(rng, start_k):
             accumulator.accumulate(x)
         return accumulator
 
-    def _random_walk_through_parameter_space(self, start_k: int = 0):
+    def _random_walk_through_parameter_space(
+        self, rng: np.random.Generator, start_k: int = 0
+    ):
         """
         Perform the random walk through parameter space.
         Yields a new sample at each iteration to be used for calculating summary statistics.
@@ -143,7 +151,7 @@ class NAAppraiser:
         ):
             for i in range(self.nd):
                 intersections, cells = self._axis_intersections(i, xA)
-                xpi = self._random_step(i, intersections, cells)
+                xpi = self._random_step(i, intersections, cells, rng)
                 xA[i] = xpi
             yield xA
 
@@ -182,15 +190,15 @@ class NAAppraiser:
             down_cells + [k] + up_cells
         )
 
-    def _random_step(self, axis, intersections, cells):
+    def _random_step(self, axis, intersections, cells, rng):
         """
         intersections are the points where the axis intersects the boundaries of the cells
         """
         while True:
-            xpi = self.rng.uniform(self.lower[axis], self.upper[axis])  # proposed step
+            xpi = rng.uniform(self.lower[axis], self.upper[axis])  # proposed step
             k = self._identify_cell(xpi, intersections, cells)  # cell containing xpi
 
-            r = self.rng.uniform(0, 1)
+            r = rng.uniform(0, 1)
             logPxpi = self.log_ppd[k]
             logPmax = np.max(self.log_ppd[cells])
             if np.log(r) < logPxpi - logPmax:  # eqn (24) Sambridge 1999(II)
