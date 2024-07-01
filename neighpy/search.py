@@ -95,18 +95,19 @@ class NASearcher:
         new_samples = self._initial_random_search()
         self._update_ensemble(new_samples)
 
-        # main optimisation loop
-        for _ in tqdm(range(self.n), desc="NAI - Optimisation Loop"):
-            inds = self._get_best_indices()
-            self._current_best_ind = inds[0]
-            cells_to_resample = self.samples[inds]
+        n_jobs = min(self.nr, cpu_count()) if parallel else 1
+        with Parallel(n_jobs=n_jobs) as _parallel:
+            # main optimisation loop
+            for _ in tqdm(range(self.n), desc="NAI - Optimisation Loop"):
+                inds = self._get_best_indices()
+                self._current_best_ind = inds[0]
+                cells_to_resample = self.samples[inds]
 
-            n_jobs = min(self.nr, cpu_count()) if parallel else 1
-            new_samples = Parallel(n_jobs=n_jobs)(
-                delayed(self._random_walk_in_voronoi)(cell, k, rng)
-                for k, cell, rng in zip(inds, cells_to_resample, self.rngs)
-            )
-            self._update_ensemble(np.concatenate(new_samples))
+                new_samples = _parallel(
+                    delayed(self._random_walk_in_voronoi)(cell, k, rng)
+                    for k, cell, rng in zip(inds, cells_to_resample, self.rngs)
+                )
+                self._update_ensemble(np.concatenate(new_samples))
 
     def objective(self, x: NDArray) -> float:
         return self._objective(x, *self.objective_args)
