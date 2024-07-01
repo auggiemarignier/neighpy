@@ -5,6 +5,7 @@ from typing import Tuple
 import warnings
 from joblib import Parallel, delayed
 from tqdm import tqdm
+from os import cpu_count
 
 from ._mcintegrals import MCIntegrals
 from .search import NASearcher
@@ -100,7 +101,8 @@ class NAAppraiser:
         return accumulator
 
     def _run_parallel(self, save: bool = True) -> MCIntegrals:
-        with Parallel(n_jobs=self.j) as parallel:
+        n_jobs = min(self.j, cpu_count())
+        with Parallel(n_jobs=n_jobs) as parallel:
             # select start points for the random walks
             # these are taken from the best 50% of cells to avoid walking
             # in low probability regions

@@ -3,6 +3,7 @@ from numpy.typing import NDArray
 from typing import Any, Tuple, Protocol, Union
 from joblib import Parallel, delayed
 from tqdm import tqdm
+from os import cpu_count
 
 
 class ObjectiveFunction(Protocol):
@@ -100,7 +101,8 @@ class NASearcher:
             self._current_best_ind = inds[0]
             cells_to_resample = self.samples[inds]
 
-            new_samples = Parallel(n_jobs=self.nr if parallel else 1)(
+            n_jobs = min(self.nr, cpu_count()) if parallel else 1
+            new_samples = Parallel(n_jobs=n_jobs)(
                 delayed(self._random_walk_in_voronoi)(cell, k, rng)
                 for k, cell, rng in zip(inds, cells_to_resample, self.rngs)
             )
