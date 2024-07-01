@@ -76,7 +76,8 @@ class NASearcher:
         )  # start with inf since we want to minimize
         self._current_best_ind = 0
 
-        self.rng = np.random.default_rng(seed)
+        ss = np.random.SeedSequence(seed)
+        self.rngs = [np.random.default_rng(s) for s in ss.spawn(self.nr)]
 
     def run(self, parallel=True) -> None:
         """
@@ -100,8 +101,8 @@ class NASearcher:
             cells_to_resample = self.samples[inds]
 
             new_samples = Parallel(n_jobs=self.nr if parallel else 1)(
-                delayed(self._random_walk_in_voronoi)(cell, k)
-                for k, cell in zip(inds, cells_to_resample)
+                delayed(self._random_walk_in_voronoi)(cell, k, rng)
+                for k, cell, rng in zip(inds, cells_to_resample, self.rngs)
             )
             self._update_ensemble(np.concatenate(new_samples))
 
@@ -109,13 +110,15 @@ class NASearcher:
         return self._objective(x, *self.objective_args)
 
     def _initial_random_search(self) -> NDArray:
-        return self.rng.uniform(
+        return self.rngs[0].uniform(
             low=self.lower,
             high=self.upper,
             size=(self.ni, self.nd),
         )
 
-    def _random_walk_in_voronoi(self, vk: NDArray, k: int) -> NDArray:
+    def _random_walk_in_voronoi(
+        self, vk: NDArray, k: int, rng: np.random.Generator
+    ) -> NDArray:
         # FOLLOWING https://github.com/underworldcode/pyNA/blob/30d1cb7955d6b1389eae885127389ed993fa6940/pyNA/sampler.py#L85
 
         # vk is the current voronoi cell
@@ -154,7 +157,7 @@ class NASearcher:
                 # eqns (20, 21) Sambridge 1999
                 li = np.nanmax(np.hstack((self.lower[i], xji[xji < xA[i]])))
                 ui = np.nanmin(np.hstack((self.upper[i], xji[xji > xA[i]])))
-                xA[i] = self.rng.uniform(li, ui)
+                xA[i] = rng.uniform(li, ui)
 
                 d2_previous_axis = d2_current_axis
 
