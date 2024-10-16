@@ -5,6 +5,7 @@ from typing import Tuple
 import warnings
 from joblib import Parallel, delayed
 from tqdm import tqdm
+from os import cpu_count
 
 from ._mcintegrals import MCIntegrals
 from .search import NASearcher
@@ -64,13 +65,14 @@ class NAAppraiser:
         ss = np.random.SeedSequence(seed)
         self.rngs = [np.random.default_rng(s) for s in ss.spawn(self.j)]
 
-    def run(self, save: bool = True) -> None:
+    def run(self, save: bool = True, start_fraction: float = 0.5) -> None:
         """
         Perform the appraisal stage of the Neighbourhood Algorithm.
         Calculates a few basic MC integrals (mean, covariance and their errors).
 
         Args:
             save: bool - whether to save the new samples from the appraisal.  Set to :code:False to save memory, or if you only want a mean and covariance.
+            start_fraction: float - the fraction of the best cells to start the random walks from.  This is used to avoid walking in low probability regions.  Only used if :code:`n_walkers > 1`.
 
         Populates the following attributes:
 
@@ -83,7 +85,9 @@ class NAAppraiser:
         if self.j == 1:
             accumulator = self._run_serial(save)
         else:
-            accumulator = self._run_parallel(save)
+            if start_fraction < 0 or start_fraction > 1:
+                raise ValueError("start_fraction must be between 0 and 1")
+            accumulator = self._run_parallel(save, start_fraction)
 
         self.mean = accumulator.mean()
         self.sample_mean_error = accumulator.sample_mean_error()
@@ -99,13 +103,17 @@ class NAAppraiser:
             accumulator.accumulate(x)
         return accumulator
 
-    def _run_parallel(self, save: bool = True) -> MCIntegrals:
-        with Parallel(n_jobs=self.j) as parallel:
+    def _run_parallel(
+        self, save: bool = True, start_fraction: float = 0.5
+    ) -> MCIntegrals:
+        n_jobs = min(self.j, cpu_count())
+        with Parallel(n_jobs=n_jobs) as parallel:
             # select start points for the random walks
-            # these are taken from the best 50% of cells to avoid walking
+            # these are taken from the best start_fraction*100% of cells to avoid walking
             # in low probability regions
+            int_threshold = int(self.Ne * start_fraction)
             start_points = np.random.choice(
-                np.argpartition(self.log_ppd, -self.Ne // 2)[-self.Ne // 2 :],
+                np.argpartition(self.log_ppd, -int_threshold)[-int_threshold:],
                 self.j,
                 replace=False,
             )
