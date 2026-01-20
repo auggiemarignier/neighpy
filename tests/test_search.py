@@ -17,7 +17,7 @@ def objective(x: NDArray) -> float:
 def NAS():
     ns = 10
     nr = 5
-    ni = 5
+    ni = 10
     n = 20
     bounds = ((-1.0, 1.0), (0.0, 10.0))
     seed = 42
@@ -54,6 +54,23 @@ def test__get_best_indices(NAS):
     assert not np.array_equal(
         NAS.objectives[inds], np.zeros(NAS.nr)
     )  # all objectives should be non-zero
+
+
+def test__get_best_indices_with_neg_inf(NAS):
+    new_samples = NAS._initial_random_search()
+    NAS._update_ensemble(new_samples)
+
+    # artificially set some objectives to -inf
+    NAS.objectives[0] = -np.inf
+    NAS.objectives[1] = -np.inf
+
+    inds = NAS._get_best_indices()
+
+    assert len(inds) == NAS.nr
+    assert 0 not in inds  # index with -inf objective should not be selected
+    assert 1 not in inds  # index with -inf objective should not be selected
+    assert NAS.objectives[0] == np.inf  # -inf should be converted to inf
+    assert NAS.objectives[1] == np.inf  # -inf should be converted to
 
 
 @pytest.mark.flaky(reruns=5, only_rerun="assert")

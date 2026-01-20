@@ -169,6 +169,10 @@ class NASearcher:
         return new_samples
 
     def _get_best_indices(self) -> NDArray:
+        # change any -inf to inf for sorting
+        self.objectives = np.where(
+            self.objectives == -np.inf, np.inf, self.objectives
+        )
         # there may be a faster way to do this using np.argpartition
         return np.argsort(self.objectives)[: self.nr]
 
