@@ -11,7 +11,7 @@ readme = "README.md"
 include = ["neighpy/_version.py"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.10"
 numpy = ">=1.22"
 joblib = "^1.3.2"
 tqdm = "^4.66.2"
