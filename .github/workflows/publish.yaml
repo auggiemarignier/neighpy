@@ -5,6 +5,7 @@ on:
       - 'v*.*.*'
     paths:
       - ".github/workflows/publish.yaml" # for testing
+  workflow_dispatch:
 
 jobs:
   build:
