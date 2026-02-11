@@ -27,12 +27,25 @@ jobs:
 
     - name: Check package
       run: |
+        # Check that _version.py is in the wheel
+        echo "Checking wheel for _version.py..."
+        WHEEL_FILE=$(ls dist/*.whl)
+        unzip -l "$WHEEL_FILE" | grep "neighpy/_version.py" || (echo "_version.py not found in wheel" && exit 1)
+        
+        # Check that _version.py is in the source distribution
+        echo "Checking sdist for _version.py..."
+        SDIST_FILE=$(ls dist/*.tar.gz)
+        tar -tzf "$SDIST_FILE" | grep "neighpy/_version.py" || (echo "_version.py not found in sdist" && exit 1)
+        
+        # Test installation and import from wheel
         source .venv/bin/activate
         pip uninstall -y neighpy
-        pip install dist/*.whl
+        pip install "$WHEEL_FILE"
         python -c "import neighpy; print(neighpy.__version__)"
+        
+        # Test installation and import from sdist
         pip uninstall -y neighpy
-        pip install dist/*.tar.gz
+        pip install "$SDIST_FILE"
         python -c "import neighpy; print(neighpy.__version__)"
 
     - name: Publish package

@@ -8,7 +8,7 @@ repository = "https://github.com/auggiemarignier/neighpy"
 license = "GPL-3.0-or-later"
 documentation = "https://neighpy.readthedocs.io/en/latest/index.html"
 readme = "README.md"
-include = ["neighpy/_version.py"]
+include = [{ path = "neighpy/_version.py", format = ["sdist", "wheel"] }]
 
 [tool.poetry.dependencies]
 python = "^3.10"
