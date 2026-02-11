@@ -3,13 +3,39 @@ on:
   push:
     tags:
       - 'v*.*.*'
+    paths:
+      - ".github/workflows/publish.yaml" # for testing
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Build and publish to pypi
-      uses: JRubics/poetry-publish@v1.16 # v2.0 is not working
-      with:
-        pypi_token: ${{ secrets.PYPI_TOKEN }}
-        plugins: "poetry-dynamic-versioning[plugin]"
+    
+    - uses: actions/checkout@v6
+
+    - name: Install Poetry
+      uses: Gr1N/setup-poetry@v8
+    
+    - name: Install dependencies
+      run: |
+        poetry config virtualenvs.in-project true
+
+    - name: Build package
+      run: |
+        poetry build
+
+    - name: Check package
+      run: |
+        source .venv/bin/activate
+        pip uninstall -y neighpy
+        pip install dist/*.whl
+        python -c "import neighpy; print(neighpy.__version__)"
+        pip uninstall -y neighpy
+        pip install dist/*.tar.gz
+        python -c "import neighpy; print(neighpy.__version__)"
+
+    - name: Publish package
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+      run: |
+        poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
+        poetry publish
