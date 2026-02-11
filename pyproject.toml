@@ -47,6 +47,9 @@ myst-nb = "0.17.2"
 [tool.poetry-dynamic-versioning]
 enable = true
 
+[tool.poetry.requires-plugins]
+poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = ["plugin"] }
+
 [tool.poetry-dynamic-versioning.substitution]
 files = ["neighpy/_version.py"]
 
