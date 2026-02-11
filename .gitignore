@@ -35,3 +35,4 @@ coverage.xml
 
 # dynamic versioning
 */_version.py
+!neighpy/_version.py
