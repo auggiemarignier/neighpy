@@ -4,7 +4,6 @@ import pytest
 from scipy.spatial import Voronoi
 from shapely.geometry import LineString, Point
 from shapely.ops import polygonize
-import matplotlib.pyplot as plt
 
 from neighpy import NASearcher
 
@@ -75,7 +74,6 @@ def test__get_best_indices_with_neg_inf(NAS):
 
 @pytest.mark.flaky(reruns=5, only_rerun="assert")
 def test_random_walk_in_voronoi(NAS):
-    _plot = False
 
     old_samples = np.meshgrid(
         np.random.uniform(NAS.lower[0], NAS.upper[0], 5),
@@ -105,26 +103,10 @@ def test_random_walk_in_voronoi(NAS):
                     vk, k, np.random.default_rng(42)
                 )
                 assert new_samples.shape == (NAS.nspnr, NAS.nd)
-                if _plot:
-                    plt.plot(new_samples[:, 0], new_samples[:, 1], "o-", color="blue")
                 for sample in new_samples:
                     # continue
                     assert poly.contains(Point(sample))
                     break
-
-    if _plot:
-        for poly in polys:
-            plt.plot(*poly.exterior.xy, color="black")
-        plt.scatter(*points.T, color="red")
-        plt.axvline(NAS.lower[0], color="black", ls="--")
-        plt.axvline(NAS.upper[0], color="black", ls="--")
-        plt.axhline(NAS.lower[1], color="black", ls="--")
-        plt.axhline(NAS.upper[1], color="black", ls="--")
-
-        eps = 0.05 * np.sqrt(1 / NAS.Cm)
-        plt.xlim(NAS.lower[0] - eps[0], NAS.upper[0] + eps[0])
-        plt.ylim(NAS.lower[1] - eps[1], NAS.upper[1] + eps[1])
-        plt.show()
 
 
 def test_run(NAS):

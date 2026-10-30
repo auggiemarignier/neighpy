@@ -12,18 +12,20 @@ include = [{ path = "neighpy/_version.py", format = ["sdist", "wheel"] }]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-numpy = ">=1.22"
+numpy = ">=2.0"
 joblib = "^1.3.2"
 tqdm = "^4.66.2"
 
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = ">=3.0.0"
-matplotlib = ">=3.5"
 shapely = "^2.0.2"
 pytest-cov = "^4.1.0"
 types-tqdm = "^4.66.0.20240106"
-scipy = ">=1.8"
+scipy = [
+    { version = ">=1.17.1", python = ">=3.11" },
+    { version = ">=1.15,<1.17.1", python = ">=3.10,<3.11" },
+]
 pytest-rerunfailures = "^13.0"
 
 [tool.poetry.group.examples]
@@ -31,7 +33,10 @@ optional = true
 
 [tool.poetry.group.examples.dependencies]
 matplotlib = ">=3.5"
-scipy = ">=1.8"
+scipy = [
+    { version = ">=1.17.1", python = ">=3.11" },
+    { version = ">=1.15,<1.17.1", python = ">=3.10,<3.11" },
+]
 jupyter = "^1.0.0"
 geo-espresso = "^0.3.11"
 seislib = {git = "https://github.com/fmagrini/seislib.git"}
