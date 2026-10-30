@@ -1,7 +1,6 @@
 import numpy as np
 from numpy.typing import NDArray
 import pytest
-import matplotlib.pyplot as plt
 
 from neighpy import NAAppraiser
 
@@ -43,7 +42,6 @@ def NAA():
 def test__axis_intersections(NAA):
     # the axis intersections with cell boundaries should be
     # halfway between the cell centres
-    _plot = False
 
     # Choose a random cell from the ensemble
     k = np.random.randint(0, NAA.Ne)
@@ -64,25 +62,10 @@ def test__axis_intersections(NAA):
     true_v_intersections = vk_col[:-1] + (vk_col[1:] - vk_col[:-1]) / 2
     assert np.sort(v_intersections) == pytest.approx(true_v_intersections)
 
-    if _plot:
-        plt.scatter(*NAA.initial_ensemble.T)
-        plt.scatter(*vk, c="r")
-        for l in true_h_intersections:
-            plt.axvline(l, c="g")
-        for l in h_intersections:
-            plt.axvline(l, c="b", ls=(0, (3, 10, 1, 10)))
-        for l in true_v_intersections:
-            plt.axhline(l, c="g")
-        for l in v_intersections:
-            plt.axhline(l, c="b", ls=(0, (3, 10, 1, 10)))
-
-    plt.show()
-
 
 def test__axis_intersections_cells(NAA):
     # the axis intersections with cell boundaries should be
     # halfway between the cell centres
-    _plot = False
 
     # Choose a random cell from the ensemble
     k = np.random.randint(0, NAA.Ne)
@@ -100,16 +83,6 @@ def test__axis_intersections_cells(NAA):
     _, v_cells = NAA._axis_intersections(axis, vk)
     true_v_cells = np.arange(j, 25, 5)
     assert np.sort(v_cells) == pytest.approx(true_v_cells)
-
-    if _plot:
-        plt.scatter(*NAA.initial_ensemble.T)
-        plt.scatter(*NAA.initial_ensemble[true_h_cells].T, c="g", marker="x")
-        plt.scatter(*NAA.initial_ensemble[h_cells].T, c="b")
-        plt.scatter(*NAA.initial_ensemble[true_v_cells].T, c="g", marker="x")
-        plt.scatter(*NAA.initial_ensemble[v_cells].T, c="b")
-        plt.scatter(*vk, c="r")
-
-    plt.show()
 
 
 @pytest.mark.parametrize("true_cell", [0, 1, 2, 3, 4])
