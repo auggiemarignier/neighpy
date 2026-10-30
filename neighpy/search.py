@@ -90,13 +90,13 @@ class NASearcher:
         - **objectives** (`NDArray`) - objective function values for each sample.
 
         """
-        # initial random search
-        print("NAI - Initial Random Search")
-        new_samples = self._initial_random_search()
-        self._update_ensemble(new_samples)
-
         n_jobs = min(self.nr, cpu_count()) if parallel else 1
         with Parallel(n_jobs=n_jobs) as _parallel:
+            # initial random search
+            print("NAI - Initial Random Search")
+            new_samples = self._initial_random_search()
+            self._update_ensemble(new_samples, _parallel)
+
             # main optimisation loop
             for _ in tqdm(range(self.n), desc="NAI - Optimisation Loop"):
                 inds = self._get_best_indices()
@@ -107,7 +107,7 @@ class NASearcher:
                     delayed(self._random_walk_in_voronoi)(cell, k, rng)
                     for k, cell, rng in zip(inds, cells_to_resample, self.rngs)
                 )
-                self._update_ensemble(np.concatenate(new_samples))
+                self._update_ensemble(np.concatenate(new_samples), _parallel)
 
     def objective(self, x: NDArray) -> float:
         return self._objective(x, *self.objective_args)
@@ -176,10 +176,26 @@ class NASearcher:
         # there may be a faster way to do this using np.argpartition
         return np.argsort(self.objectives)[: self.nr]
 
-    def _update_ensemble(self, new_samples: NDArray):
+    def _update_ensemble(
+        self, new_samples: NDArray, parallel: Union[Parallel, None] = None
+    ) -> None:
+        """
+        Add a set of new samples to the ensemble and evaluate the objective
+        (one forward model simulation per sample).
+
+        Args:
+            new_samples (NDArray): The new samples to add to the ensemble.
+            parallel (Parallel, optional): A joblib Parallel instance used to
+                run the ensemble of forward simulations in parallel. If None,
+                the simulations are run serially.
+        """
         n = new_samples.shape[0]
         self.samples[self.np : self.np + n] = new_samples
-        self.objectives[self.np : self.np + n] = np.apply_along_axis(
-            self.objective, 1, new_samples
+
+        if parallel is None:
+            parallel = Parallel(n_jobs=1)
+
+        self.objectives[self.np : self.np + n] = parallel(
+            delayed(self.objective)(x) for x in new_samples
         )
         self.np += n
